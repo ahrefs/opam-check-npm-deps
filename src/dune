@@ -1,15 +1,5 @@
-(melange.emit
- (target output)
- (alias react)
- (libraries reason-react world)
- (modules :standard \ hello)
- (preprocess
-  (pps reactjs-jsx-ppx))
- (module_systems es6))
-
-(melange.emit
- (target node)
- (alias node)
- (libraries world)
- (modules hello)
- (module_systems commonjs))
+(executable
+ (name main)
+ (public_name opam-check-npm-deps)
+ (package opam-check-npm-deps)
+ (libraries opam-client))
