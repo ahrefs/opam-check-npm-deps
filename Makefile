@@ -1,4 +1,4 @@
-project_name = melange-opam-template
+project_name = opam-check-npm-deps
 
 DUNE = opam exec -- dune
 
@@ -20,26 +20,17 @@ init: create-switch install ## Configure everything to develop this repository i
 
 .PHONY: install
 install: ## Install development dependencies
-	npm install --legacy-peer-deps
 	opam update
 	opam install -y . --deps-only
 	opam pin -y add $(project_name).dev .
 
 .PHONY: build
 build: ## Build the project
-	$(DUNE) build @react @node
+	$(DUNE) build
 
 .PHONY: build_verbose
 build_verbose: ## Build the project
-	$(DUNE) build --verbose @react @node
-
-.PHONY: serve
-serve: ## Serve the application with a local HTTP server
-	npm run serve
-
-.PHONY: bundle
-bundle: ## Bundle the JavaScript application
-	npm run bundle
+	$(DUNE) build --verbose
 
 .PHONY: clean
 clean: ## Clean build artifacts and other generated files
@@ -55,4 +46,4 @@ format-check: ## Checks if format is correct
 
 .PHONY: watch
 watch: ## Watch for the filesystem and rebuild on every change
-	$(DUNE) build --watch @react @node
+	$(DUNE) build --watch

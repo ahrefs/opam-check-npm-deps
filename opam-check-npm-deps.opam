@@ -1,0 +1,35 @@
+opam-version: "2.0"
+synopsis:
+  "An opam plugin to check for npm depexts inside the node_modules folder"
+description:
+  "Provides the `opam check-npm-deps` command, which given an opam switch, gathers all the depexts belonging to the npm platform and their version constraints, and checks the `node_modules` folder to see if the constraints are satisfied."
+maintainer: ["Javier Chávarri"]
+authors: ["Javier Chávarri"]
+license: "MIT"
+homepage: "https://github.com/jchavarri/opam-check-npm-deps"
+bug-reports: "https://github.com/jchavarri/opam-check-npm-deps/issues"
+depends: [
+  "ocaml" {>= "4.14.0" & < "5.0.0"}
+  "reason" {>= "3.8.1" & < "4.0.0"}
+  "dune" {>= "3.8"}
+  "opam-client" {>= "2.1.2" & < "2.2.0"}
+  "ocaml-lsp-server" {dev}
+  "ocamlformat" {dev}
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/jchavarri/opam-check-npm-deps.git"
+flags: plugin
