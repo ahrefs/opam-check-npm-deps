@@ -1,0 +1,3 @@
+(cram
+ (package opam-check-npm-deps)
+ (deps %{bin:opam} %{bin:opam-check-npm-deps}))
