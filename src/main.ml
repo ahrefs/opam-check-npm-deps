@@ -45,7 +45,10 @@ let check_npm_deps cli =
     OpamArg.apply_global_options cli global_options;
     OpamArg.apply_build_options cli build_options;
     OpamClientConfig.update ~inplace_build:true ~working_dir:true ();
-    (* OpamCoreConfig.update ~verbose_level:6 (); *)
+    (* Reducing log level, otherwise, some errors are triggered in CI:
+    [WARNING] At /tmp/build_477fc1_dune/opam-25628-ddab92/default/packages/expect_test_helpers_kernel/expect_test_helpers_kernel.v0.9.0/opam:32:0-32:17::
+    Unknown package flags deprecated ignored *)
+    OpamCoreConfig.update ~verbose_level:0 ();
     print_endline
       ("VERBOSE 2: " ^ string_of_int OpamCoreConfig.(!r.verbose_level));
     OpamGlobalState.with_ `Lock_none @@ fun gt ->
