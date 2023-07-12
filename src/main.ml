@@ -45,6 +45,9 @@ let check_npm_deps cli =
     OpamArg.apply_global_options cli global_options;
     OpamArg.apply_build_options cli build_options;
     OpamClientConfig.update ~inplace_build:true ~working_dir:true ();
+    (* OpamCoreConfig.update ~verbose_level:6 (); *)
+    print_endline
+      ("VERBOSE 2: " ^ string_of_int OpamCoreConfig.(!r.verbose_level));
     OpamGlobalState.with_ `Lock_none @@ fun gt ->
     OpamSwitchState.with_ `Lock_write gt @@ fun st ->
     let npm_depexts =
@@ -60,6 +63,8 @@ let check_npm_deps cli =
       match npm_depexts with
       | [] -> ()
       | l ->
+          print_endline
+            ("VERBOSE 3: " ^ string_of_int OpamCoreConfig.(!r.verbose_level));
           print_endline "Found the following npm dependencies in opam files:";
           print_endline
             (OpamStd.List.concat_map " "
@@ -79,9 +84,10 @@ let check_npm_deps cli =
 [@@@ocaml.warning "-3"]
 
 let () =
+  (* OpamCoreConfig.update ~verbose_level:6 (); *)
   OpamStd.Option.iter OpamVersion.set_git OpamGitVersion.version;
   OpamSystem.init ();
-  (* OpamArg.preinit_opam_envvariables (); *)
+  print_endline ("VERBOSE 1: " ^ string_of_int OpamCoreConfig.(!r.verbose_level));
   OpamCliMain.main_catch_all @@ fun () ->
   match
     Term.eval ~catch:false (check_npm_deps (OpamCLIVersion.default, `Default))
