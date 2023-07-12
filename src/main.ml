@@ -4,6 +4,12 @@ open Cmdliner
 
 let check_npm_deps_doc = "Check for npm depexts inside the node_modules folder"
 
+let match_version_against_constraint version formula =
+  let open EsyPackageConfig.SemverVersion in
+  let pf = Formula.parseExn formula in
+  let pv = Version.parseExn version in
+  Formula.DNF.matches ~version:pv pf
+
 let depexts nv opams =
   try
     let opam = OpamPackage.Map.find nv opams in
@@ -51,6 +57,11 @@ let check_npm_deps cli =
     OpamCoreConfig.update ~verbose_level:0 ();
     OpamGlobalState.with_ `Lock_none @@ fun gt ->
     OpamSwitchState.with_ `Lock_write gt @@ fun st ->
+    let () =
+      match match_version_against_constraint "1.0.1" "^1.0.0" with
+      | true -> print_endline "TRUE"
+      | false -> print_endline "FALSE"
+    in
     let npm_depexts =
       List.filter_map
         (fun pkg ->
@@ -83,7 +94,6 @@ let check_npm_deps cli =
 [@@@ocaml.warning "-3"]
 
 let () =
-  (* OpamCoreConfig.update ~verbose_level:6 (); *)
   OpamStd.Option.iter OpamVersion.set_git OpamGitVersion.version;
   OpamSystem.init ();
   OpamCliMain.main_catch_all @@ fun () ->
