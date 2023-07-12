@@ -22,7 +22,7 @@ init: create-switch install ## Configure everything to develop this repository i
 install: ## Install development dependencies
 	opam update
 	opam install -y . --deps-only
-	opam pin -y add $(project_name).dev . --with-test
+	opam pin -y add $(project_name).dev .
 
 .PHONY: build
 build: ## Build the project
@@ -47,3 +47,7 @@ format-check: ## Checks if format is correct
 .PHONY: watch
 watch: ## Watch for the filesystem and rebuild on every change
 	$(DUNE) build --watch
+
+.PHONY: test
+test: ## Run tests
+	$(DUNE) build @runtest

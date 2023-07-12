@@ -36,5 +36,8 @@ jobs:
       - name: Install all deps
         run: make install
 
-      - name: Build basic template
+      - name: Build the project
         run: make build
+
+      - name: Run tests
+        run: make test
