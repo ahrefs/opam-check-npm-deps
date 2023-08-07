@@ -14,7 +14,7 @@ let depexts nv opams =
   try
     let opam = OpamPackage.Map.find nv opams in
     List.fold_left
-      (fun depexts (names, filter) ->
+      (fun npm_pkgs_and_constraints (names, filter) ->
         let variables = OpamFilter.variables filter in
         let has_npm =
           let module V = OpamVariable in
@@ -24,10 +24,24 @@ let depexts nv opams =
                 (V.to_string (V.Full.variable full_var)))
             variables
         in
-        if has_npm then OpamSysPkg.Set.Op.(names ++ depexts) else depexts)
-      OpamSysPkg.Set.empty
+        match has_npm with
+        | false -> npm_pkgs_and_constraints
+        | true -> (
+            match filter with
+            | OpamTypes.FOp (_a, `Eq, FString npm_constraint) ->
+                (names, npm_constraint) :: npm_pkgs_and_constraints
+            | _ ->
+                print_endline
+                  (Printf.sprintf
+                     "Warning: package %s includes an invalid npm-version \
+                      constraint which does not use equality in its formula: \
+                      %s"
+                     (OpamPackage.to_string nv)
+                     (OpamFilter.to_string filter));
+                npm_pkgs_and_constraints))
+      []
       (OpamFile.OPAM.depexts opam)
-  with Not_found -> OpamSysPkg.Set.empty
+  with Not_found -> []
 
 let check_npm_deps cli =
   let doc = check_npm_deps_doc in
@@ -57,19 +71,15 @@ let check_npm_deps cli =
     OpamCoreConfig.update ~verbose_level:0 ();
     OpamGlobalState.with_ `Lock_none @@ fun gt ->
     OpamSwitchState.with_ `Lock_write gt @@ fun st ->
-    let () =
-      match match_version_against_constraint "1.0.1" "^1.0.0" with
-      | true -> print_endline "TRUE"
-      | false -> print_endline "FALSE"
-    in
     let npm_depexts =
       List.filter_map
         (fun pkg ->
           let depexts = depexts pkg st.opams in
-          match OpamSysPkg.Set.cardinal depexts with
-          | 0 -> None
-          | _ -> Some (pkg, depexts))
+          match depexts with [] -> None | _ -> Some (pkg, depexts))
         OpamPackage.Set.(elements @@ st.installed)
+    in
+    let _DELETEME_matches =
+      match_version_against_constraint "1.0.1" "^1.0.0"
     in
     let () =
       match npm_depexts with
@@ -78,10 +88,16 @@ let check_npm_deps cli =
           print_endline "Found the following npm dependencies in opam files:";
           print_endline
             (OpamStd.List.concat_map " "
-               (fun (pkg, npm_deps) ->
-                 Printf.sprintf "pkg: %s, depexts: %s\n"
-                   (OpamPackage.to_string pkg)
-                   (OpamSysPkg.Set.to_string npm_deps))
+               (fun (opam_pkg, npm_pkgs_and_constraints) ->
+                 String.concat "\n"
+                   (List.map
+                      (fun (npm_pkgs, npm_constraint) ->
+                        Printf.sprintf
+                          "opam pkg: %s, npm pkgs: %s, constraint: %s"
+                          (OpamPackage.to_string opam_pkg)
+                          (OpamSysPkg.Set.to_string npm_pkgs)
+                          npm_constraint)
+                      npm_pkgs_and_constraints))
                l)
     in
     OpamSwitchState.drop st
