@@ -10,6 +10,19 @@ let match_version_against_constraint version formula =
   let pv = Version.parseExn version in
   Formula.DNF.matches ~version:pv pf
 
+module Of_package_json = struct
+  open EsyLib
+
+  type t = { version : string [@default "0.0.0"] }
+  [@@deriving of_yojson { strict = false }]
+
+  let read path =
+    let open RunAsync.Syntax in
+    let* json = Fs.readJsonFile path in
+    let* pkgJson = RunAsync.ofRun (Json.parseJsonWith of_yojson json) in
+    return pkgJson.version
+end
+
 let depexts nv opams =
   try
     let opam = OpamPackage.Map.find nv opams in
@@ -78,27 +91,62 @@ let check_npm_deps cli =
           match depexts with [] -> None | _ -> Some (pkg, depexts))
         OpamPackage.Set.(elements @@ st.installed)
     in
-    let _DELETEME_matches =
-      match_version_against_constraint "1.0.1" "^1.0.0"
-    in
     let () =
       match npm_depexts with
       | [] -> ()
       | l ->
-          print_endline "Found the following npm dependencies in opam files:";
-          print_endline
-            (OpamStd.List.concat_map " "
-               (fun (opam_pkg, npm_pkgs_and_constraints) ->
-                 String.concat "\n"
-                   (List.map
-                      (fun (npm_pkgs, npm_constraint) ->
-                        Printf.sprintf
-                          "opam pkg: %s, npm pkgs: %s, constraint: %s"
-                          (OpamPackage.to_string opam_pkg)
-                          (OpamSysPkg.Set.to_string npm_pkgs)
-                          npm_constraint)
-                      npm_pkgs_and_constraints))
-               l)
+          List.iter
+            (fun (opam_pkg, npm_pkgs_and_constraints) ->
+              List.iter
+                (fun (npm_pkgs, npm_constraint) ->
+                  OpamSysPkg.Set.iter
+                    (fun npm_pkg ->
+                      let open EsyLib in
+                      let path =
+                        Path.(
+                          currentPath () / "node_modules"
+                          / OpamSysPkg.to_string npm_pkg
+                          / "package.json")
+                      in
+                      let installed_version =
+                        try Ok (RunAsync.runExn (Of_package_json.read path))
+                        with _exn -> Error ()
+                      in
+                      match installed_version with
+                      | Error () ->
+                          print_endline
+                            (Printf.sprintf
+                               "Error: opam package \"%s\" requires npm package \"%s\" \
+                                with constraint \"%s\", but file \"%s\" can not \
+                                be found"
+                               (OpamPackage.to_string opam_pkg)
+                               (OpamSysPkg.to_string npm_pkg)
+                               npm_constraint (Path.showNormalized path))
+                      | Ok installed_version -> (
+                          match
+                            match_version_against_constraint installed_version
+                              npm_constraint
+                          with
+                          | true ->
+                              print_endline
+                                (Printf.sprintf
+                                   "Ok: opam package \"%s\" requires npm package: \"%s\" with \
+                                    constraint \"%s\", version installed: \"%s\""
+                                   (OpamPackage.to_string opam_pkg)
+                                   (OpamSysPkg.to_string npm_pkg)
+                                   npm_constraint installed_version)
+                          | false ->
+                              print_endline
+                                (Printf.sprintf
+                                   "Error: opam package \"%s\" requires npm \
+                                    package \"%s\" with constraint \"%s\", but the \
+                                    version installed is \"%s\""
+                                   (OpamPackage.to_string opam_pkg)
+                                   (OpamSysPkg.to_string npm_pkg)
+                                   npm_constraint installed_version)))
+                    npm_pkgs)
+                npm_pkgs_and_constraints)
+            l
     in
     OpamSwitchState.drop st
   in
