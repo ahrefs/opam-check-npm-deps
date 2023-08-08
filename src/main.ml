@@ -3,6 +3,7 @@ open Cmdliner
 (* Inspired by https://gitlab.ocamlpro.com/louis/opam-custom-install *)
 
 let check_npm_deps_doc = "Check for npm depexts inside the node_modules folder"
+let error_found = ref false
 
 let match_version_against_constraint version formula =
   let open EsyPackageConfig.SemverVersion in
@@ -44,13 +45,11 @@ let depexts nv opams =
             | OpamTypes.FOp (_a, `Eq, FString npm_constraint) ->
                 (names, npm_constraint) :: npm_pkgs_and_constraints
             | _ ->
-                print_endline
-                  (Printf.sprintf
-                     "Warning: package %s includes an invalid npm-version \
-                      constraint which does not use equality in its formula: \
-                      %s"
-                     (OpamPackage.to_string nv)
-                     (OpamFilter.to_string filter));
+                Printf.printf
+                  "Warning: package %s includes an invalid npm-version \
+                   constraint which does not use equality in its formula: %s\n"
+                  (OpamPackage.to_string nv)
+                  (OpamFilter.to_string filter);
                 npm_pkgs_and_constraints))
       []
       (OpamFile.OPAM.depexts opam)
@@ -114,41 +113,47 @@ let check_npm_deps cli =
                       in
                       match installed_version with
                       | Error () ->
-                          print_endline
-                            (Printf.sprintf
-                               "Error: opam package \"%s\" requires npm package \"%s\" \
-                                with constraint \"%s\", but file \"%s\" can not \
-                                be found"
-                               (OpamPackage.to_string opam_pkg)
-                               (OpamSysPkg.to_string npm_pkg)
-                               npm_constraint (Path.showNormalized path))
+                          error_found := true;
+                          Printf.eprintf
+                            "Error: opam package \"%s\" requires npm package \
+                             \"%s\" with constraint \"%s\", but file \"%s\" \
+                             can not be found\n"
+                            (OpamPackage.to_string opam_pkg)
+                            (OpamSysPkg.to_string npm_pkg)
+                            npm_constraint (Path.showNormalized path)
                       | Ok installed_version -> (
                           match
                             match_version_against_constraint installed_version
                               npm_constraint
                           with
                           | true ->
-                              print_endline
-                                (Printf.sprintf
-                                   "Ok: opam package \"%s\" requires npm package: \"%s\" with \
-                                    constraint \"%s\", version installed: \"%s\""
-                                   (OpamPackage.to_string opam_pkg)
-                                   (OpamSysPkg.to_string npm_pkg)
-                                   npm_constraint installed_version)
+                              Printf.printf
+                                "Ok: opam package \"%s\" requires npm package: \
+                                 \"%s\" with constraint \"%s\", version \
+                                 installed: \"%s\"\n"
+                                (OpamPackage.to_string opam_pkg)
+                                (OpamSysPkg.to_string npm_pkg)
+                                npm_constraint installed_version
                           | false ->
-                              print_endline
-                                (Printf.sprintf
-                                   "Error: opam package \"%s\" requires npm \
-                                    package \"%s\" with constraint \"%s\", but the \
-                                    version installed is \"%s\""
-                                   (OpamPackage.to_string opam_pkg)
-                                   (OpamSysPkg.to_string npm_pkg)
-                                   npm_constraint installed_version)))
+                              error_found := true;
+                              Printf.eprintf
+                                "Error: opam package \"%s\" requires npm \
+                                 package \"%s\" with constraint \"%s\", but \
+                                 the version installed is \"%s\"\n"
+                                (OpamPackage.to_string opam_pkg)
+                                (OpamSysPkg.to_string npm_pkg)
+                                npm_constraint installed_version))
                     npm_pkgs)
                 npm_pkgs_and_constraints)
             l
     in
-    OpamSwitchState.drop st
+    OpamSwitchState.drop st;
+    ()
+    (* match !error_found with
+       | false -> ()
+       | true ->
+           print_endline "errorrrr";
+           exit (OpamStd.Sys.get_exit_code `False) *)
   in
   OpamArg.mk_command ~cli OpamArg.cli_original "opam-check-npm-deps" ~doc ~man
     Term.(
