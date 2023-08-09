@@ -141,8 +141,8 @@ Errors when version does not match
   $ yarn install --silent
 
   $ opam-check-npm-deps
-  Error: opam package "test.dev" requires npm package "react-dom" with constraint "^16.0.2", but the version installed is "18.2.0"
-  Error: opam package "test.dev" requires npm package "react" with constraint "^16.0.2", but the version installed is "18.2.0"
+  Error: opam package "test.dev" requires npm package "react-dom" with constraint "^16.0.2", but the version installed found in file "$TESTCASE_ROOT/node_modules/react-dom/package.json" is "18.2.0"
+  Error: opam package "test.dev" requires npm package "react" with constraint "^16.0.2", but the version installed found in file "$TESTCASE_ROOT/node_modules/react/package.json" is "18.2.0"
   [1]
 
   $ opam pin remove -y test | grep "removed"
@@ -213,7 +213,7 @@ When --dry-run is used, exit code is 0
   $ yarn install --silent
 
   $ opam-check-npm-deps --dry-run
-  Error: opam package "test.dev" requires npm package "react" with constraint "^16.0.2", but the version installed is "18.2.0"
+  Error: opam package "test.dev" requires npm package "react" with constraint "^16.0.2", but the version installed found in file "$TESTCASE_ROOT/node_modules/react/package.json" is "18.2.0"
 
   $ opam pin remove -y test | grep "removed"
   -> removed   test.dev

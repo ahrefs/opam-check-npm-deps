@@ -146,10 +146,12 @@ let check_npm_deps cli =
                               Printf.eprintf
                                 "Error: opam package \"%s\" requires npm \
                                  package \"%s\" with constraint \"%s\", but \
-                                 the version installed is \"%s\"\n"
+                                 the version installed found in file \"%s\" is \
+                                 \"%s\"\n"
                                 (OpamPackage.to_string opam_pkg)
                                 (OpamSysPkg.to_string npm_pkg)
-                                npm_constraint installed_version))
+                                npm_constraint (Path.showNormalized path)
+                                installed_version))
                     npm_pkgs)
                 npm_pkgs_and_constraints)
             l
