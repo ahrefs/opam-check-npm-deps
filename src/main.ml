@@ -148,12 +148,9 @@ let check_npm_deps cli =
             l
     in
     OpamSwitchState.drop st;
-    ()
-    (* match !error_found with
-       | false -> ()
-       | true ->
-           print_endline "errorrrr";
-           exit (OpamStd.Sys.get_exit_code `False) *)
+    match !error_found with
+    | false -> ()
+    | true -> exit (OpamStd.Sys.get_exit_code `False)
   in
   OpamArg.mk_command ~cli OpamArg.cli_original "opam-check-npm-deps" ~doc ~man
     Term.(

@@ -36,9 +36,6 @@ Supports package with more than one depext
   Ok: opam package "test.dev" requires npm package: "react-dom" with constraint "^16.0.2", version installed: "16.14.0"
   Ok: opam package "test.dev" requires npm package: "react" with constraint "^16.0.2", version installed: "16.14.0"
 
-  $ echo $?
-  0
-
   $ opam pin remove -y test | grep "removed"
   -> removed   test.dev
 
@@ -79,9 +76,6 @@ Supports package one depext, where there is more than one npm package in the sys
   Ok: opam package "test.dev" requires npm package: "react" with constraint "^16.0.2", version installed: "16.14.0"
   Ok: opam package "test.dev" requires npm package: "react-dom" with constraint "^16.0.2", version installed: "16.14.0"
 
-  $ echo $?
-  0
-
   $ opam pin remove -y test | grep "removed"
   -> removed   test.dev
 
@@ -108,9 +102,6 @@ Errors when using npm-version without an equality filter `=`
 
   $ opam-check-npm-deps
   Warning: package test.dev includes an invalid npm-version constraint which does not use equality in its formula: npm-version >= "^16.0.2"
-
-  $ echo $?
-  0
 
   $ opam pin remove -y test | grep "removed"
   -> removed   test.dev
@@ -152,9 +143,7 @@ Errors when version does not match
   $ opam-check-npm-deps
   Error: opam package "test.dev" requires npm package "react-dom" with constraint "^16.0.2", but the version installed is "18.2.0"
   Error: opam package "test.dev" requires npm package "react" with constraint "^16.0.2", but the version installed is "18.2.0"
-
-  $ echo $?
-  0
+  [1]
 
   $ opam pin remove -y test | grep "removed"
   -> removed   test.dev
@@ -186,9 +175,7 @@ Errors when node_module folder is not found
   $ opam-check-npm-deps
   Error: opam package "test.dev" requires npm package "react-dom" with constraint "^16.0.2", but file "$TESTCASE_ROOT/node_modules/react-dom/package.json" can not be found
   Error: opam package "test.dev" requires npm package "react" with constraint "^16.0.2", but file "$TESTCASE_ROOT/node_modules/react/package.json" can not be found
-
-  $ echo $?
-  0
+  [1]
 
   $ opam pin remove -y test | grep "removed"
   -> removed   test.dev
