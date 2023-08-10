@@ -101,7 +101,8 @@ Errors when using npm-version without an equality filter `=`
   -> installed test.dev
 
   $ opam-check-npm-deps
-  Warning: package test.dev includes an invalid npm-version constraint which does not use equality in its formula: npm-version >= "^16.0.2"
+  Warning: package test.dev includes an invalid npm-version constraint which does not use equality in its formula: npm-version >= "^16.0.2".
+  To fix the issue, use an equality formula, e.g. {npm-version = "^1.0.0"}
 
   $ opam pin remove -y test | grep "removed"
   -> removed   test.dev

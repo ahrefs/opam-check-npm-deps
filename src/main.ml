@@ -3,7 +3,6 @@ open Cmdliner
 (* Inspired by https://gitlab.ocamlpro.com/louis/opam-custom-install *)
 
 let check_npm_deps_doc = "Check for npm depexts inside the node_modules folder"
-let error_found = ref false
 
 let match_version_against_constraint version formula =
   let open EsyPackageConfig.SemverVersion in
@@ -17,7 +16,7 @@ module Of_package_json = struct
   type t = { version : string [@default "0.0.0"] }
   [@@deriving of_yojson { strict = false }]
 
-  let read path =
+  let read_version path =
     let open RunAsync.Syntax in
     let* json = Fs.readJsonFile path in
     let* pkgJson = RunAsync.ofRun (Json.parseJsonWith of_yojson json) in
@@ -47,7 +46,9 @@ let depexts nv opams =
             | _ ->
                 Printf.printf
                   "Warning: package %s includes an invalid npm-version \
-                   constraint which does not use equality in its formula: %s\n"
+                   constraint which does not use equality in its formula: %s.\n\
+                   To fix the issue, use an equality formula, e.g. \
+                   {npm-version = \"^1.0.0\"}\n"
                   (OpamPackage.to_string nv)
                   (OpamFilter.to_string filter);
                 npm_pkgs_and_constraints))
@@ -82,6 +83,7 @@ let check_npm_deps cli =
              but don't have the command return any error status code.")
   in
   let check_npm_deps dry_run () =
+    let error_found = ref false in
     OpamClientConfig.opam_init ();
     OpamClientConfig.update ~inplace_build:true ~working_dir:true ();
     (* Reducing log level, otherwise, some errors are triggered in CI:
@@ -115,7 +117,10 @@ let check_npm_deps cli =
                           / "package.json")
                       in
                       let installed_version =
-                        try Ok (RunAsync.runExn (Of_package_json.read path))
+                        try
+                          Ok
+                            (RunAsync.runExn
+                               (Of_package_json.read_version path))
                         with _exn -> Error ()
                       in
                       match installed_version with
