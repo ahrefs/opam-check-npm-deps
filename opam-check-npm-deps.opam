@@ -9,7 +9,7 @@ license: "MIT"
 homepage: "https://github.com/jchavarri/opam-check-npm-deps"
 bug-reports: "https://github.com/jchavarri/opam-check-npm-deps/issues"
 depends: [
-  "ocaml" {>= "4.14.0" & < "5.0.0"}
+  "ocaml" {>= "4.14.0"}
   "reason" {>= "3.8.1" & < "4.0.0"}
   "dune" {>= "3.8"}
   "opam-client" {>= "2.1.2" & < "2.2.0"}
