@@ -7,7 +7,13 @@ When running the plugin, it checks the current opam switch to read all `depexts`
 fields that use the `npm-version` variable, and then reads the `node_modules`
 folder to see if the constraints are satisfied.
 
-## Defining constraints
+## For bindings authors: defining constraints
+
+Constraints are defined by adding an entry to `depexts` with the npm package
+name as the "system package" and and an equality formula that matches the
+`npm-version` variable to a version range. This range can be defined using the
+same format as `package.json` [dependencies
+field](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#dependencies).
 
 For example, the `reason-react` bindings can define its dependency on the
 `react` npm package like this:
@@ -19,7 +25,15 @@ depexts: [
 ]
 ```
 
-## Usage
+Or, to simplify:
+
+```
+depexts: [
+  ["react" "react-dom"] {npm-version = "^16.0.2"}
+]
+```
+
+## For bindings users: check 
 
 Install:
 ```shell
