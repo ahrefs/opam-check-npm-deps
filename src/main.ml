@@ -10,11 +10,24 @@ let match_version_against_constraint version formula =
   let pv = Version.parseExn version in
   Formula.DNF.matches ~version:pv pf
 
+module Of_package_json = struct
+  open EsyLib
+
+  type t = { version : string [@default "0.0.0"] }
+  [@@deriving of_yojson { strict = false }]
+
+  let read_version path =
+    let open RunAsync.Syntax in
+    let* json = Fs.readJsonFile path in
+    let* pkgJson = RunAsync.ofRun (Json.parseJsonWith of_yojson json) in
+    return pkgJson.version
+end
+
 let depexts nv opams =
   try
     let opam = OpamPackage.Map.find nv opams in
     List.fold_left
-      (fun depexts (names, filter) ->
+      (fun npm_pkgs_and_constraints (names, filter) ->
         let variables = OpamFilter.variables filter in
         let has_npm =
           let module V = OpamVariable in
@@ -24,10 +37,24 @@ let depexts nv opams =
                 (V.to_string (V.Full.variable full_var)))
             variables
         in
-        if has_npm then OpamSysPkg.Set.Op.(names ++ depexts) else depexts)
-      OpamSysPkg.Set.empty
+        match has_npm with
+        | false -> npm_pkgs_and_constraints
+        | true -> (
+            match filter with
+            | OpamTypes.FOp (_a, `Eq, FString npm_constraint) ->
+                (names, npm_constraint) :: npm_pkgs_and_constraints
+            | _ ->
+                Printf.printf
+                  "Warning: package %s includes an invalid npm-version \
+                   constraint which does not use equality in its formula: %s.\n\
+                   To fix the issue, use an equality formula, e.g. \
+                   {npm-version = \"^1.0.0\"}\n"
+                  (OpamPackage.to_string nv)
+                  (OpamFilter.to_string filter);
+                npm_pkgs_and_constraints))
+      []
       (OpamFile.OPAM.depexts opam)
-  with Not_found -> OpamSysPkg.Set.empty
+  with Not_found -> []
 
 let check_npm_deps cli =
   let doc = check_npm_deps_doc in
@@ -47,9 +74,17 @@ let check_npm_deps cli =
     ]
     @ OpamArg.man_build_option_section
   in
-  let check_npm_deps global_options build_options () =
-    OpamArg.apply_global_options cli global_options;
-    OpamArg.apply_build_options cli build_options;
+  let dry_run =
+    Arg.(
+      value & flag
+      & info [ "dry-run"; "d" ]
+          ~doc:
+            "Check `npm-version` constraints against installed npm packages, \
+             but don't have the command return any error status code.")
+  in
+  let check_npm_deps dry_run () =
+    let error_found = ref false in
+    OpamClientConfig.opam_init ();
     OpamClientConfig.update ~inplace_build:true ~working_dir:true ();
     (* Reducing log level, otherwise, some errors are triggered in CI:
        [WARNING] At /tmp/build_477fc1_dune/opam-25628-ddab92/default/packages/expect_test_helpers_kernel/expect_test_helpers_kernel.v0.9.0/opam:32:0-32:17::
@@ -57,39 +92,82 @@ let check_npm_deps cli =
     OpamCoreConfig.update ~verbose_level:0 ();
     OpamGlobalState.with_ `Lock_none @@ fun gt ->
     OpamSwitchState.with_ `Lock_write gt @@ fun st ->
-    let () =
-      match match_version_against_constraint "1.0.1" "^1.0.0" with
-      | true -> print_endline "TRUE"
-      | false -> print_endline "FALSE"
-    in
     let npm_depexts =
       List.filter_map
         (fun pkg ->
           let depexts = depexts pkg st.opams in
-          match OpamSysPkg.Set.cardinal depexts with
-          | 0 -> None
-          | _ -> Some (pkg, depexts))
+          match depexts with [] -> None | _ -> Some (pkg, depexts))
         OpamPackage.Set.(elements @@ st.installed)
     in
     let () =
       match npm_depexts with
       | [] -> ()
       | l ->
-          print_endline "Found the following npm dependencies in opam files:";
-          print_endline
-            (OpamStd.List.concat_map " "
-               (fun (pkg, npm_deps) ->
-                 Printf.sprintf "pkg: %s, depexts: %s\n"
-                   (OpamPackage.to_string pkg)
-                   (OpamSysPkg.Set.to_string npm_deps))
-               l)
+          List.iter
+            (fun (opam_pkg, npm_pkgs_and_constraints) ->
+              List.iter
+                (fun (npm_pkgs, npm_constraint) ->
+                  OpamSysPkg.Set.iter
+                    (fun npm_pkg ->
+                      let open EsyLib in
+                      let path =
+                        Path.(
+                          currentPath () / "node_modules"
+                          / OpamSysPkg.to_string npm_pkg
+                          / "package.json")
+                      in
+                      let installed_version =
+                        try
+                          Ok
+                            (RunAsync.runExn
+                               (Of_package_json.read_version path))
+                        with _exn -> Error ()
+                      in
+                      match installed_version with
+                      | Error () ->
+                          error_found := true;
+                          Printf.eprintf
+                            "Error: opam package \"%s\" requires npm package \
+                             \"%s\" with constraint \"%s\", but file \"%s\" \
+                             can not be found\n"
+                            (OpamPackage.to_string opam_pkg)
+                            (OpamSysPkg.to_string npm_pkg)
+                            npm_constraint (Path.showNormalized path)
+                      | Ok installed_version -> (
+                          match
+                            match_version_against_constraint installed_version
+                              npm_constraint
+                          with
+                          | true ->
+                              Printf.printf
+                                "Ok: opam package \"%s\" requires npm package: \
+                                 \"%s\" with constraint \"%s\", version \
+                                 installed: \"%s\"\n"
+                                (OpamPackage.to_string opam_pkg)
+                                (OpamSysPkg.to_string npm_pkg)
+                                npm_constraint installed_version
+                          | false ->
+                              error_found := true;
+                              Printf.eprintf
+                                "Error: opam package \"%s\" requires npm \
+                                 package \"%s\" with constraint \"%s\", but \
+                                 the version installed found in file \"%s\" is \
+                                 \"%s\"\n"
+                                (OpamPackage.to_string opam_pkg)
+                                (OpamSysPkg.to_string npm_pkg)
+                                npm_constraint (Path.showNormalized path)
+                                installed_version))
+                    npm_pkgs)
+                npm_pkgs_and_constraints)
+            l
     in
-    OpamSwitchState.drop st
+    OpamSwitchState.drop st;
+    match !error_found && not dry_run with
+    | false -> ()
+    | true -> exit (OpamStd.Sys.get_exit_code `False)
   in
   OpamArg.mk_command ~cli OpamArg.cli_original "opam-check-npm-deps" ~doc ~man
-    Term.(
-      const check_npm_deps $ OpamArg.global_options cli
-      $ OpamArg.build_options cli)
+    Term.(const check_npm_deps $ dry_run)
 
 [@@@ocaml.warning "-3"]
 
