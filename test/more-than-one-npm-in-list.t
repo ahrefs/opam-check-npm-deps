@@ -1,6 +1,6 @@
 Supports having more than one npm package in the syspkg list
 
-  $ opam switch create . --empty
+  $ opam switch create . --empty | grep -v "to update the current shell environment"
 
   $ cat > test.opam <<EOF
   > opam-version: "2.0"

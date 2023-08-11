@@ -1,6 +1,6 @@
 Errors when node_module folder is not found
 
-  $ opam switch create . --empty
+  $ opam switch create . --empty | grep -v "to update the current shell environment"
 
   $ cat > test.opam <<EOF
   > opam-version: "2.0"
