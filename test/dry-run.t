@@ -1,6 +1,6 @@
 When --dry-run is used, exit code is 0
 
-  $ opam switch create . --empty | grep -v "to update the current shell environment"
+  $ OPAMNOENVNOTICE="true" opam switch create . --empty
 
   $ cat > test.opam <<EOF
   > opam-version: "2.0"
