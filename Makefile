@@ -50,4 +50,5 @@ watch: ## Watch for the filesystem and rebuild on every change
 
 .PHONY: test
 test: ## Run tests
-	$(DUNE) build @runtest
+# Needed to avoid errors with lock "Another process has locked /home/me/.opam/config.lock, waiting (C-c to abort)..."
+	$(DUNE) build @runtest -j 1
