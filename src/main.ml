@@ -91,7 +91,7 @@ let check_npm_deps cli =
        Unknown package flags deprecated ignored *)
     OpamCoreConfig.update ~verbose_level:0 ();
     OpamGlobalState.with_ `Lock_none @@ fun gt ->
-    OpamSwitchState.with_ `Lock_write gt @@ fun st ->
+    OpamSwitchState.with_ `Lock_none gt @@ fun st ->
     let npm_depexts =
       List.filter_map
         (fun pkg ->
