@@ -13,7 +13,9 @@ depends: [
   "reason" {>= "3.8.1" & < "4.0.0"}
   "dune" {>= "3.8"}
   "opam-client" {>= "2.1.2" & < "2.2.0"}
-  "angstrom"
+  "mccs" {>= "1.1+14"}
+  "angstrom" {>= "0.15.0"}
+  "fmt" {>= "0.9.0"}
   "bos"
   "lwt_ppx"
   "ppx_deriving_yojson"
