@@ -11,6 +11,7 @@ Supports package with more than one depext
   > """
   > maintainer: "Name <email>"
   > authors: "Name <email>"
+  > license: "MIT"
   > homepage: "https://github.com/test/project"
   > bug-reports: "https://github.com/test/project/issues"
   > depexts: [
@@ -39,4 +40,4 @@ Supports package with more than one depext
   Ok: opam package "test.dev" requires npm package: "react" with constraint "^16.0.2", version installed: "16.14.0"
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y

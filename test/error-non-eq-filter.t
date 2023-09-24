@@ -11,6 +11,7 @@ Errors when using npm-version without an equality filter `=`
   > """
   > maintainer: "Name <email>"
   > authors: "Name <email>"
+  > license: "MIT"
   > homepage: "https://github.com/test/project"
   > bug-reports: "https://github.com/test/project/issues"
   > depexts: [
@@ -26,4 +27,4 @@ Errors when using npm-version without an equality filter `=`
   To fix the issue, use an equality formula, e.g. {npm-version = "^1.0.0"}
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y

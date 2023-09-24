@@ -1,3 +1,7 @@
+## v2.0.0 (2023-09-24)
+
+- Support opam 2.2
+
 ## v1.0.0 (2023-08-10)
 
 - Initial version

@@ -9,5 +9,5 @@
 
 (library
  (name esy_fmt_tty)
- (libraries esy_fmt)
+ (libraries esy_fmt unix)
  (modules esy_fmt_tty))

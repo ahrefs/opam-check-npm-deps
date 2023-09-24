@@ -175,8 +175,11 @@ let () =
   OpamStd.Option.iter OpamVersion.set_git OpamGitVersion.version;
   OpamSystem.init ();
   OpamCliMain.main_catch_all @@ fun () ->
-  match
-    Term.eval ~catch:false (check_npm_deps (OpamCLIVersion.default, `Default))
-  with
-  | `Error _ -> exit (OpamStd.Sys.get_exit_code `Bad_arguments)
-  | _ -> exit (OpamStd.Sys.get_exit_code `Success)
+  (* TODO: Get rid of this whenever https://github.com/dbuenzli/cmdliner/pull/161 is available *)
+  let to_new_cmdliner_api (term, info) = Cmd.v info term in
+  let command =
+    to_new_cmdliner_api (check_npm_deps (OpamCLIVersion.default, `Default))
+  in
+  match Cmd.eval_value ~catch:false command with
+  | Error _ -> exit (OpamStd.Sys.get_exit_code `Bad_arguments)
+  | Ok _ -> exit (OpamStd.Sys.get_exit_code `Success)
