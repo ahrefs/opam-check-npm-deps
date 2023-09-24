@@ -11,6 +11,7 @@ Errors when version does not match
   > """
   > maintainer: "Name <email>"
   > authors: "Name <email>"
+  > license: "MIT"
   > homepage: "https://github.com/test/project"
   > bug-reports: "https://github.com/test/project/issues"
   > depexts: [
@@ -40,4 +41,4 @@ Errors when version does not match
   [1]
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
