@@ -29,7 +29,7 @@ When --dry-run is used, exit code is 0
   > {
   >   "license": "MIT",
   >   "dependencies": {
-  >     "react": "^18.2.0"
+  >     "react": "18.2.0"
   >   }
   > }
   > EOF
@@ -137,8 +137,8 @@ Errors when version does not match
   > {
   >   "license": "MIT",
   >   "dependencies": {
-  >     "react": "^18.2.0",
-  >     "react-dom": "^18.2.0"
+  >     "react": "18.2.0",
+  >     "react-dom": "18.2.0"
   >   }
   > }
   > EOF
@@ -182,8 +182,8 @@ Supports package with more than one depext
   > {
   >   "license": "MIT",
   >   "dependencies": {
-  >     "react": "^16.0.2",
-  >     "react-dom": "^16.0.2"
+  >     "react": "16.14.0",
+  >     "react-dom": "16.14.0"
   >   }
   > }
   > EOF
@@ -225,8 +225,8 @@ Supports having more than one npm package in the syspkg list
   > {
   >   "license": "MIT",
   >   "dependencies": {
-  >     "react": "^16.0.2",
-  >     "react-dom": "^16.0.2"
+  >     "react": "16.14.0",
+  >     "react-dom": "16.14.0"
   >   }
   > }
   > EOF
@@ -268,7 +268,7 @@ Supports || filters in the npm-version string
   > {
   >   "license": "MIT",
   >   "dependencies": {
-  >     "react": "^17.0.0"
+  >     "react": "17.0.2"
   >   }
   > }
   > EOF
