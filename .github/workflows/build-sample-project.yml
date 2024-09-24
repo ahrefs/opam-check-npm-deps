@@ -17,7 +17,7 @@ jobs:
           - ubuntu-latest
           # - windows-latest # for some reason windows build is not picking dune 3.5
         ocaml-compiler:
-          - 5.1.x
+          - 5.2.x
 
       fail-fast: false
     runs-on: ${{ matrix.system }}
@@ -29,9 +29,10 @@ jobs:
           node-version: current
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: jchavarri/setup-ocaml@opam-v2
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          allow-prerelease-opam: true
 
       - name: Install all deps
         run: make install
