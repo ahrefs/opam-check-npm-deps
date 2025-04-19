@@ -23,6 +23,7 @@ When --dry-run is used, exit code is 0
   > EOF
 
   $ opam pin add -y test.dev . | grep "installed"
+  [NOTE] Package test does not exist in opam repositories registered in the current switch.
   -> installed test.dev
 
   $ cat > package.json <<EOF
@@ -40,7 +41,7 @@ When --dry-run is used, exit code is 0
   Error: opam package "test.dev" requires npm package "react" with constraint "^16.0.2", but the version installed found in file "$TESTCASE_ROOT/node_modules/react/package.json" is "18.2.0"
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
 
 Errors when node_module folder is not found
 
@@ -65,6 +66,7 @@ Errors when node_module folder is not found
   > EOF
 
   $ opam pin add -y test.dev . | grep "installed"
+  [NOTE] Package test does not exist in opam repositories registered in the current switch.
   -> installed test.dev
 
   $ rm -rf node_modules
@@ -75,7 +77,7 @@ Errors when node_module folder is not found
   [1]
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
 
 Errors when using npm-version without an equality filter `=`
 
@@ -99,6 +101,7 @@ Errors when using npm-version without an equality filter `=`
   > EOF
 
   $ opam pin add -y test.dev . | grep "installed"
+  [NOTE] Package test does not exist in opam repositories registered in the current switch.
   -> installed test.dev
 
   $ opam-check-npm-deps
@@ -106,7 +109,7 @@ Errors when using npm-version without an equality filter `=`
   To fix the issue, use an equality formula, e.g. {npm-version = "^1.0.0"}
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
 
 Errors when version does not match
 
@@ -131,6 +134,7 @@ Errors when version does not match
   > EOF
 
   $ opam pin add -y test.dev . | grep "installed"
+  [NOTE] Package test does not exist in opam repositories registered in the current switch.
   -> installed test.dev
 
   $ cat > package.json <<EOF
@@ -151,7 +155,7 @@ Errors when version does not match
   [1]
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
 
 Supports package with more than one depext
 
@@ -176,6 +180,7 @@ Supports package with more than one depext
   > EOF
 
   $ opam pin add -y test.dev . | grep "installed"
+  [NOTE] Package test does not exist in opam repositories registered in the current switch.
   -> installed test.dev
 
   $ cat > package.json <<EOF
@@ -195,7 +200,7 @@ Supports package with more than one depext
   Ok: opam package "test.dev" requires npm package: "react" with constraint "^16.0.2", version installed: "16.14.0"
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
 
 Supports having more than one npm package in the syspkg list
 
@@ -219,6 +224,7 @@ Supports having more than one npm package in the syspkg list
   > EOF
 
   $ opam pin add -y test.dev . | grep "installed"
+  [NOTE] Package test does not exist in opam repositories registered in the current switch.
   -> installed test.dev
 
   $ cat > package.json <<EOF
@@ -238,7 +244,7 @@ Supports having more than one npm package in the syspkg list
   Ok: opam package "test.dev" requires npm package: "react-dom" with constraint "^16.0.2", version installed: "16.14.0"
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
 
 Supports || filters in the npm-version string
 
@@ -262,6 +268,7 @@ Supports || filters in the npm-version string
   > EOF
 
   $ opam pin add -y test.dev . | grep "installed"
+  [NOTE] Package test does not exist in opam repositories registered in the current switch.
   -> installed test.dev
 
   $ cat > package.json <<EOF
@@ -279,4 +286,4 @@ Supports || filters in the npm-version string
   Ok: opam package "test.dev" requires npm package: "react" with constraint "^16.0.0 || ^17.0.0", version installed: "17.0.2"
 
   $ opam switch remove -y .
-  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [y/n] y
+  Switch $TESTCASE_ROOT and all its packages will be wiped. Are you sure? [Y/n] y
