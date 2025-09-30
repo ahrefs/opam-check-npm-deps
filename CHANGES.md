@@ -1,3 +1,7 @@
+## v4.0.1 (2025-09-30)
+
+- Fix syntax error after reason/ppx_let upstream changes.
+
 ## v4.0.0 (2025-04-19)
 
 - Support opam 2.4
