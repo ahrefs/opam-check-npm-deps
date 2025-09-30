@@ -134,8 +134,8 @@ let lstat = (path: Path.t) => {
 
 let isDir = (path: Path.t) =>
   switch%lwt (stat(path)) {
-  | Ok({st_kind: Unix.S_DIR, _}) => RunAsync.return(true)
-  | Ok({st_kind: _, _}) => RunAsync.return(false)
+  | Ok({ st_kind: Unix.S_DIR, _ }) => RunAsync.return(true)
+  | Ok({ st_kind: _, _ }) => RunAsync.return(false)
   | Error(_) => RunAsync.return(false)
   };
 
@@ -581,7 +581,8 @@ let symlink = (~force=false, ~src, dst) => {
   | Ok () => return()
   | Error(Unix.EEXIST) when force =>
     /* try rm path but ignore errors */
-    let%lwt _: Run.t(unit) = rmPath(dst);
+    let%lwt rmPathResult = rmPath(dst);
+    let () = (rmPathResult: Run.t(unit)) |> ignore;
     switch%lwt (symlink'(src, dst)) {
     | Ok () => return()
     | Error(err) => mkError(err)
@@ -602,7 +603,7 @@ let realpath = path => {
 
   let isSymlinkAndExists = path =>
     switch%lwt (lstat(path)) {
-    | Ok({Unix.st_kind: Unix.S_LNK, _}) => return(true)
+    | Ok({ Unix.st_kind: Unix.S_LNK, _ }) => return(true)
     | _ => return(false)
     };
 
