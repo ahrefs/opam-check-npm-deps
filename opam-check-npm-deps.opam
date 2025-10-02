@@ -42,3 +42,4 @@ build: [
 ]
 dev-repo: "git+https://github.com/ahrefs/opam-check-npm-deps.git"
 flags: plugin
+x-maintenance-intent: [ "(latest)" ]
