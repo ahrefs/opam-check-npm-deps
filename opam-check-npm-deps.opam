@@ -13,7 +13,7 @@ depends: [
   "ocaml" {>= "4.14.0"}
   "reason" {>= "3.8.1"}
   "dune" {>= "3.8"}
-  "opam-client" {>= "2.4" & < "2.5"}
+  "opam-client" {>= "2.5" & < "2.6"}
   "mccs" {>= "1.1+14"}
   "angstrom" {>= "0.15.0"}
   "fmt" {>= "0.9.0"}
@@ -26,7 +26,7 @@ depends: [
   "ppx_sexp_conv"
   "odoc" {with-doc}
 ]
-available: opam-version >= "2.4" & opam-version < "2.5"
+available: opam-version >= "2.5" & opam-version < "2.6"
 build: [
   ["dune" "subst"] {dev}
   [
