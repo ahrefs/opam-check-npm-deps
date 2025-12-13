@@ -1,4 +1,4 @@
-open Cmdliner
+open OpamCmdliner
 
 (* Inspired by https://gitlab.ocamlpro.com/louis/opam-custom-install *)
 
@@ -172,7 +172,7 @@ let check_npm_deps cli =
 [@@@ocaml.warning "-3"]
 
 let () =
-  OpamStd.Option.iter OpamVersion.set_git OpamGitVersion.version;
+  Stdlib.Option.iter OpamVersion.set_git OpamGitVersion.version;
   OpamSystem.init ();
   OpamCliMain.main_catch_all @@ fun () ->
   (* TODO: Get rid of this whenever https://github.com/dbuenzli/cmdliner/pull/161 is available *)
