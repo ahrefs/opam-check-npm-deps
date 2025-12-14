@@ -1,5 +1,3 @@
-open Sexplib0.Sexp_conv
-
 type t =
   | Dist of Dist.t
   | Link of {
@@ -7,7 +5,7 @@ type t =
       manifest : ManifestSpec.t option;
       kind : linkKind;
     }
-[@@deriving ord, sexp_of]
+[@@deriving ord]
 
 and linkKind = LinkRegular | LinkDev
 
@@ -89,15 +87,8 @@ module Parse = struct
     let make path manifest = Link { path; manifest; kind } in
     pathLike make
 
-  let dist =
-    [%map
-      let dist = Dist.parser in
-      Dist dist]
-
-  let distRelaxed =
-    [%map
-      let dist = Dist.parserRelaxed in
-      Dist dist]
+  let dist = Dist.parser >>| fun dist -> Dist dist
+  let distRelaxed = Dist.parserRelaxed >>| fun dist -> Dist dist
 
   let link =
     withPrefix "link:" (makeLink LinkRegular ~requirePathSep:false)
@@ -146,174 +137,3 @@ module Set = Set.Make (struct
 
   let compare = compare
 end)
-
-[%%test_module
-let "parsing" =
-  (module struct
-    let parse = Parse.Test.parse ~sexp_of:sexp_of_t parse
-
-    [%%expect_test
-    let "github:user/repo#abc123" =
-      parse "github:user/repo#abc123";
-      [%expect
-        {| (Dist (Github (user user) (repo repo) (commit abc123) (manifest ()))) |}]]
-
-    [%%expect_test
-    let "github:user/repo:lwt.opam#abc123" =
-      parse "github:user/repo:lwt.opam#abc123";
-      [%expect
-        {|
-      (Dist
-       (Github (user user) (repo repo) (commit abc123)
-        (manifest ((Opam lwt.opam))))) |}]]
-
-    [%%expect_test
-    let "gh:user/repo#abc123" =
-      parse "gh:user/repo#abc123";
-      [%expect
-        {| (Dist (Github (user user) (repo repo) (commit abc123) (manifest ()))) |}]]
-
-    [%%expect_test
-    let "gh:user/repo:lwt.opam#abc123" =
-      parse "gh:user/repo:lwt.opam#abc123";
-      [%expect
-        {|
-      (Dist
-       (Github (user user) (repo repo) (commit abc123)
-        (manifest ((Opam lwt.opam))))) |}]]
-
-    [%%expect_test
-    let "git:http://example.com/repo#abc123" =
-      parse "git:http://example.com/repo#abc123";
-      [%expect
-        {| (Dist (Git (remote http://example.com/repo) (commit abc123) (manifest ()))) |}]]
-
-    [%%expect_test
-    let "git:http://example.com/repo:lwt.opam#abc123" =
-      parse "git:http://example.com/repo:lwt.opam#abc123";
-      [%expect
-        {|
-      (Dist
-       (Git (remote http://example.com/repo) (commit abc123)
-        (manifest ((Opam lwt.opam))))) |}]]
-
-    [%%expect_test
-    let "git:git://example.com/repo:lwt.opam#abc123" =
-      parse "git:git://example.com/repo:lwt.opam#abc123";
-      [%expect
-        {|
-      (Dist
-       (Git (remote git://example.com/repo) (commit abc123)
-        (manifest ((Opam lwt.opam))))) |}]]
-
-    [%%expect_test
-    let "archive:http://example.com#abc123" =
-      parse "archive:http://example.com#abc123";
-      [%expect
-        {| (Dist (Archive (url http://example.com) (checksum (Sha1 abc123)))) |}]]
-
-    [%%expect_test
-    let "archive:https://example.com#abc123" =
-      parse "archive:https://example.com#abc123";
-      [%expect
-        {| (Dist (Archive (url https://example.com) (checksum (Sha1 abc123)))) |}]]
-
-    [%%expect_test
-    let "archive:https://example.com#md5:abc123" =
-      parse "archive:https://example.com#md5:abc123";
-      [%expect
-        {| (Dist (Archive (url https://example.com) (checksum (Md5 abc123)))) |}]]
-
-    [%%expect_test
-    let "path:/some/path" =
-      parse "path:/some/path";
-      [%expect {| (Dist (LocalPath ((path /some/path) (manifest ())))) |}]]
-
-    [%%expect_test
-    let "path:/some/path/lwt.opam" =
-      parse "path:/some/path/lwt.opam";
-      [%expect
-        {| (Dist (LocalPath ((path /some/path) (manifest ((Opam lwt.opam)))))) |}]]
-
-    [%%expect_test
-    let "link:/some/path" =
-      parse "link:/some/path";
-      [%expect {| (Link (path /some/path) (manifest ()) (kind LinkRegular)) |}]]
-
-    [%%expect_test
-    let "link:/some/path/lwt.opam" =
-      parse "link:/some/path/lwt.opam";
-      [%expect
-        {| (Link (path /some/path) (manifest ((Opam lwt.opam))) (kind LinkRegular)) |}]]
-
-    [%%expect_test
-    let "path:some" =
-      parse "path:some";
-      [%expect {| (Dist (LocalPath ((path some) (manifest ())))) |}]]
-
-    [%%expect_test
-    let "link:some" =
-      parse "link:some";
-      [%expect {| (Link (path some) (manifest ()) (kind LinkRegular)) |}]]
-
-    [%%expect_test
-    let "no-source:" =
-      parse "no-source:";
-      [%expect {| (Dist NoSource) |}]]
-
-    let parseRelaxed = Parse.Test.parse ~sexp_of:sexp_of_t parseRelaxed
-
-    [%%expect_test
-    let "user/repo#abc123" =
-      parseRelaxed "user/repo#abc123";
-      [%expect
-        {| (Dist (Github (user user) (repo repo) (commit abc123) (manifest ()))) |}]]
-
-    [%%expect_test
-    let "user/repo:lwt.opam#abc123" =
-      parseRelaxed "user/repo:lwt.opam#abc123";
-      [%expect
-        {|
-      (Dist
-       (Github (user user) (repo repo) (commit abc123)
-        (manifest ((Opam lwt.opam))))) |}]]
-
-    [%%expect_test
-    let "http://example.com#abc123" =
-      parseRelaxed "http://example.com#abc123";
-      [%expect
-        {| (Dist (Archive (url http://example.com) (checksum (Sha1 abc123)))) |}]]
-
-    [%%expect_test
-    let "https://example.com#abc123" =
-      parseRelaxed "https://example.com#abc123";
-      [%expect
-        {| (Dist (Archive (url https://example.com) (checksum (Sha1 abc123)))) |}]]
-
-    [%%expect_test
-    let "https://example.com#md5:abc123" =
-      parseRelaxed "https://example.com#md5:abc123";
-      [%expect
-        {| (Dist (Archive (url https://example.com) (checksum (Md5 abc123)))) |}]]
-
-    [%%expect_test
-    let "http://localhost:56886/dep/-/dep-1.0.0.tgz#fabe490fb72a10295d554037341d8c7d5497cde9"
-        =
-      parseRelaxed
-        "http://localhost:56886/dep/-/dep-1.0.0.tgz#fabe490fb72a10295d554037341d8c7d5497cde9";
-      [%expect
-        {|
-      (Dist
-       (Archive (url http://localhost:56886/dep/-/dep-1.0.0.tgz)
-        (checksum (Sha1 fabe490fb72a10295d554037341d8c7d5497cde9)))) |}]]
-
-    [%%expect_test
-    let "/some/path" =
-      parseRelaxed "/some/path";
-      [%expect {| (Dist (LocalPath ((path /some/path) (manifest ())))) |}]]
-
-    [%%expect_test
-    let "some" =
-      parseRelaxed "some";
-      [%expect {| ERROR: parsing "some": : not a path |}]]
-  end)]

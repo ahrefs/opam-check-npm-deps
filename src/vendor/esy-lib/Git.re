@@ -224,7 +224,8 @@ module ShallowClone = {
 
     let rec aux = (~retry=true, ()) => {
       open RunAsync.Syntax;
-      if%bind (Fs.exists(dst)) {
+      let* exists = Fs.exists(dst);
+      if (exists) {
         let* remoteCommit =
           lsRemote(~config=gitConfig, ~ref=branch, ~remote=source, ());
         let* localCommit = getLocalCommit();

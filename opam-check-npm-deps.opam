@@ -20,10 +20,6 @@ depends: [
   "bos"
   "lwt_ppx"
   "ppx_deriving_yojson"
-  "ppx_expect"
-  "ppx_inline_test"
-  "ppx_let"
-  "ppx_sexp_conv"
   "odoc" {with-doc}
 ]
 available: opam-version >= "2.5" & opam-version < "2.6"

@@ -148,12 +148,14 @@ module List = {
 
   let filter = (~concurrency=?, ~f, xs) => {
     open Syntax;
-    let f = x =>
-      if%bind (f(x)) {
+    let f = x => {
+      let* pred = f(x);
+      if (pred) {
         return(Some(x));
       } else {
         return(None);
       };
+    };
     let f = limitWithConccurrency(concurrency, f);
     let* xs = joinAll(List.map(~f, xs));
     return(List.filterNone(xs));

@@ -3,18 +3,20 @@ let stripComponentFrom = (~stripComponents=?, out) => {
   let rec find = path =>
     fun
     | 0 => return(path)
-    | n =>
-      switch%bind (Fs.listDir(path)) {
-      | [item] => find(Path.(path / item), n - 1)
-      | [] => error("unpacking: unable to strip path components: empty dir")
-      | _ =>
-        let%lwt () =
-          Esy_logs_lwt.info(m =>
-            m(
-              "unpacking: unable to strip path components: multiple root dirs",
-            )
-          );
-        return(path);
+    | n => {
+        let* listDirResult = Fs.listDir(path);
+        switch (listDirResult) {
+        | [item] => find(Path.(path / item), n - 1)
+        | [] => error("unpacking: unable to strip path components: empty dir")
+        | _ =>
+          let%lwt () =
+            Esy_logs_lwt.info(m =>
+              m(
+                "unpacking: unable to strip path components: multiple root dirs",
+              )
+            );
+          return(path);
+        };
       };
   /* Strip components was greater than 0, but the tarball has multiple entires in the root
      to traverse deep.

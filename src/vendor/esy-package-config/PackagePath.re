@@ -54,66 +54,6 @@ let parse = v => {
   };
 };
 
-let%test_module _ =
-  (module
-   {
-     let raiseNotExpected = p => {
-       let msg = Printf.sprintf("Not expected: [%s]", show(p));
-       raise(Failure(msg));
-     };
-
-     let parsesOkTo = (v, e) =>
-       switch (parse(v)) {
-       | Ok(p) when p == e => ()
-       | Ok(p) => raiseNotExpected(p)
-       | Error(err) => raise(Failure(err))
-       };
-
-     let parsesToErr = v =>
-       switch (parse(v)) {
-       | Ok(p) => raiseNotExpected(p)
-       | Error(_err) => ()
-       };
-
-     let%test_unit _ = parsesOkTo("some", ([], "some"));
-     let%test_unit _ =
-       parsesOkTo("some/another", ([Pkg("some")], "another"));
-     let%test_unit _ = parsesOkTo("**/another", ([AnyPkg], "another"));
-     let%test_unit _ = parsesOkTo("@scp/pkg", ([], "@scp/pkg"));
-     let%test_unit _ =
-       parsesOkTo("@scp/pkg/another", ([Pkg("@scp/pkg")], "another"));
-     let%test_unit _ =
-       parsesOkTo("@scp/pkg/**/hey", ([Pkg("@scp/pkg"), AnyPkg], "hey"));
-     let%test_unit _ =
-       parsesOkTo("another/@scp/pkg", ([Pkg("another")], "@scp/pkg"));
-     let%test_unit _ =
-       parsesOkTo(
-         "another/**/@scp/pkg",
-         ([Pkg("another"), AnyPkg], "@scp/pkg"),
-       );
-     let%test_unit _ =
-       parsesOkTo(
-         "@scp/pkg/@scp/another",
-         ([Pkg("@scp/pkg")], "@scp/another"),
-       );
-     let%test_unit _ =
-       parsesOkTo(
-         "@scp/pkg/**/@scp/another",
-         ([Pkg("@scp/pkg"), AnyPkg], "@scp/another"),
-       );
-
-     let%test_unit _ = parsesToErr("@some");
-     let%test_unit _ = parsesToErr("**");
-     let%test_unit _ = parsesToErr("@some/");
-     let%test_unit _ = parsesToErr("@some/**");
-     let%test_unit _ = parsesToErr("@scp/pkg/**");
-     let%test_unit _ = parsesToErr("@some//");
-     let%test_unit _ = parsesToErr("@some//pkg");
-     let%test_unit _ = parsesToErr("pkg1//pkg2");
-     let%test_unit _ = parsesToErr("pkg1/");
-     let%test_unit _ = parsesToErr("/pkg1");
-   });
-
 let to_yojson = v => `String(show(v));
 let of_yojson =
   fun

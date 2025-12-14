@@ -4,7 +4,6 @@ type local = {
 };
 
 let compare_local: (local, local) => int;
-let sexp_of_local: local => Sexplib0.Sexp.t;
 let local_of_yojson: Json.decoder(local);
 let local_to_yojson: Json.encoder(local);
 
@@ -32,7 +31,6 @@ include S.JSONABLE with type t := t;
 include S.COMPARABLE with type t := t;
 
 let ppPretty: Fmt.t(t);
-let sexp_of_t: t => Sexplib0.Sexp.t;
 
 let parser: Parse.t(t);
 let parse: string => result(t, string);

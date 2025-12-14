@@ -21,7 +21,8 @@ let foldWithBuildOverrides = (~f, ~init, overrides) => {
   let f = (v, override) => {
     let%lwt () =
       Esy_logs_lwt.debug(m => m("build override: %a", Override.pp, override));
-    switch%bind (Override.build(override)) {
+    let* build = Override.build(override);
+    switch (build) {
     | Some(override) => return(f(v, override))
     | None => return(v)
     };
@@ -37,7 +38,8 @@ let foldWithInstallOverrides = (~f, ~init, overrides) => {
       Esy_logs_lwt.debug(m =>
         m("install override: %a", Override.pp, override)
       );
-    switch%bind (Override.install(override)) {
+    let* install = Override.install(override);
+    switch (install) {
     | Some(override) => return(f(v, override))
     | None => return(v)
     };

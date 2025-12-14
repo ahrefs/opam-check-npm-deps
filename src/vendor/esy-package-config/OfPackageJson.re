@@ -7,7 +7,7 @@ module BuildType = {
 
 module InstallManifestV1 = {
   module EsyPackageJson = {
-    [@deriving of_yojson({strict: false})]
+    [@deriving of_yojson({ strict: false })]
     type t = {
       [@default None]
       _dependenciesForNewEsyInstaller: option(NpmFormula.t),
@@ -15,7 +15,7 @@ module InstallManifestV1 = {
   };
 
   module Manifest = {
-    [@deriving of_yojson({strict: false})]
+    [@deriving of_yojson({ strict: false })]
     type t = {
       [@default None]
       name: option(string),
@@ -41,12 +41,12 @@ module InstallManifestV1 = {
   };
 
   module ResolutionsOfManifest = {
-    [@deriving of_yojson({strict: false})]
+    [@deriving of_yojson({ strict: false })]
     type t = {resolutions: [@default Resolutions.empty] Resolutions.t};
   };
 
   module DevDependenciesOfManifest = {
-    [@deriving of_yojson({strict: false})]
+    [@deriving of_yojson({ strict: false })]
     type t = {
       [@default NpmFormula.empty]
       devDependencies: NpmFormula.t,
@@ -58,13 +58,18 @@ module InstallManifestV1 = {
     let f = req =>
       switch (source, req.Req.spec) {
       | (
-          Source.Dist(LocalPath({path: basePath, _})) |
-          Source.Link({path: basePath, _}),
-          VersionSpec.Source(SourceSpec.LocalPath({path, manifest})),
+          Source.Dist(LocalPath({ path: basePath, _ })) |
+          Source.Link({ path: basePath, _ }),
+          VersionSpec.Source(SourceSpec.LocalPath({ path, manifest })),
         ) =>
         let path = DistPath.rebase(~base=basePath, path);
         let spec =
-          VersionSpec.Source(SourceSpec.LocalPath({path, manifest}));
+          VersionSpec.Source(
+            SourceSpec.LocalPath({
+              path,
+              manifest,
+            }),
+          );
         return(Req.make(~name=req.name, ~spec));
       | (_, VersionSpec.Source(SourceSpec.LocalPath(_))) =>
         errorf(
@@ -116,7 +121,7 @@ module InstallManifestV1 = {
     let dependencies =
       switch (pkgJson.esy) {
       | None
-      | Some({EsyPackageJson._dependenciesForNewEsyInstaller: None}) =>
+      | Some({ EsyPackageJson._dependenciesForNewEsyInstaller: None }) =>
         pkgJson.dependencies
       | Some({
           EsyPackageJson._dependenciesForNewEsyInstaller: Some(dependencies),
@@ -134,7 +139,7 @@ module InstallManifestV1 = {
       switch (parseDevDependencies) {
       | false => return(NpmFormula.empty)
       | true =>
-        let* {DevDependenciesOfManifest.devDependencies} =
+        let* { DevDependenciesOfManifest.devDependencies } =
           Json.parseJsonWith(DevDependenciesOfManifest.of_yojson, json);
 
         let* devDependencies = rebaseDependencies(source, devDependencies);
@@ -145,7 +150,7 @@ module InstallManifestV1 = {
       switch (parseResolutions) {
       | false => return(Resolutions.empty)
       | true =>
-        let* {ResolutionsOfManifest.resolutions} =
+        let* { ResolutionsOfManifest.resolutions } =
           Json.parseJsonWith(ResolutionsOfManifest.of_yojson, json);
 
         return(resolutions);
@@ -153,10 +158,17 @@ module InstallManifestV1 = {
 
     let source =
       switch (source) {
-      | Source.Link({path, manifest, kind}) =>
-        PackageSource.Link({path, manifest, kind})
+      | Source.Link({ path, manifest, kind }) =>
+        PackageSource.Link({
+          path,
+          manifest,
+          kind,
+        })
       | Source.Dist(dist) =>
-        PackageSource.Install({source: (dist, []), opam: None})
+        PackageSource.Install({
+          source: (dist, []),
+          opam: None,
+        })
       };
 
     let warnings = [];
@@ -190,7 +202,7 @@ module InstallManifestV1 = {
 };
 
 module BuildManifestV1 = {
-  [@deriving of_yojson({strict: false})]
+  [@deriving of_yojson({ strict: false })]
   type packageJson = {
     [@default None]
     name: option(string),
@@ -199,7 +211,7 @@ module BuildManifestV1 = {
     [@default None]
     esy: option(packageJsonEsy),
   }
-  [@deriving of_yojson({strict: false})]
+  [@deriving of_yojson({ strict: false })]
   and packageJsonEsy = {
     build: [@default CommandList.empty] CommandList.t,
     buildDev: [@default None] option(CommandList.t),
@@ -280,16 +292,16 @@ module EsyVersion = {
           switch (List.find_opt(~f, items)) {
           | Some((_, json)) =>
             let* esy = of_yojson(json);
-            return({esy: Some(esy)});
-          | None => return({esy: None})
+            return({ esy: Some(esy) });
+          | None => return({ esy: None })
           };
         | _ => errorf({|reading "dependencies": expected an object|})
         }
       );
 
-    [@deriving of_yojson({strict: false})]
+    [@deriving of_yojson({ strict: false })]
     type manifest = {
-      [@default {esy: Some(default)}]
+      [@default { esy: Some(default) }]
       dependencies,
     };
 
@@ -364,10 +376,11 @@ let buildManifest = json => {
   | Some(1) => BuildManifestV1.ofJson(json)
   | Some(v) => unknownEsyVersionError(v)
   | None =>
-    switch%bind (BuildManifestV1.ofJson(json)) {
+    let* buildManifest = BuildManifestV1.ofJson(json);
+    switch (buildManifest) {
     | Some((m, warnings)) =>
       return(Some((m, [missingEsyVersionWarning, ...warnings])))
     | None => return(None)
-    }
+    };
   };
 };
