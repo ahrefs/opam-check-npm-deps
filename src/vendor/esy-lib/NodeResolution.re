@@ -1,12 +1,10 @@
 module PackageJson = {
-  type t = {
-    main: option(string),
-  };
+  type t = {main: option(string)};
   let of_json = data =>
     Yojson.Safe.Util.(
       try({
         let main = member("main", data) |> to_string_option;
-        Result.Ok({main: main});
+        Result.Ok({ main: main });
       }) {
       | Type_error(_) => Result.Error("Error parsing package.json")
       }
@@ -57,7 +55,7 @@ let rec realpath = (p: Fpath.t) => {
   let _realpath = (p: Fpath.t) => {
     let isSymlinkAndExists = p =>
       switch (Bos.OS.Path.symlink_stat(p)) {
-      | Ok({Unix.st_kind: Unix.S_LNK, _}) => Ok(true)
+      | Ok({ Unix.st_kind: Unix.S_LNK, _ }) => Ok(true)
       | _ => Ok(false)
       };
     if (Fpath.is_root(p)) {
@@ -104,13 +102,15 @@ let resolvePath = path =>
         /* Check if directory contains package.json and read entry point from
            there if any */
         let package_json_path = Fpath.(path / "package.json");
-        if%bind (Bos.OS.Path.exists(package_json_path)) {
+        let* pathExists = Bos.OS.Path.exists(package_json_path);
+        if (pathExists) {
           let* entry_point = package_entry_point(package_json_path);
           Ok(Some(entry_point));
         } else {
           /*** Check if directory contains index.js and return it if found */
           let index_js_path = Fpath.(path / "index.js");
-          if%bind (Bos.OS.Path.exists(index_js_path)) {
+          let* pathExists = Bos.OS.Path.exists(index_js_path);
+          if (pathExists) {
             Ok(Some(index_js_path));
           } else {
             Ok(None);
@@ -126,7 +126,8 @@ let resolvePath = path =>
 /** Try to resolve an absolute path with different extensions */
 let resolveExtensionlessPath = (path: Fpath.t) => {
   open Result.Syntax;
-  switch%bind (resolvePath(path)) {
+  let* pathResult = resolvePath(path);
+  switch (pathResult) {
   | None => resolvePath(Fpath.add_ext(".js", path))
   | Some(_) as res => Ok(res)
   };
@@ -138,8 +139,10 @@ let rec resolvePackage =
   open Result.Syntax;
   let node_modules_path = Path.(basedir / "node_modules");
   let package_path = Path.append(node_modules_path, package);
-  if%bind (Bos.OS.Path.exists(node_modules_path)) {
-    if%bind (Bos.OS.Path.exists(package_path)) {
+  let* exists = Bos.OS.Path.exists(node_modules_path);
+  if (exists) {
+    let* exists = Bos.OS.Path.exists(package_path);
+    if (exists) {
       switch (segments) {
       | None => resolveExtensionlessPath(package_path)
       | Some(segments) =>
@@ -190,8 +193,9 @@ let resolve = (~basedir=?, req) => {
       }
     };
 
-  let someOrError = v =>
-    switch%bind (v) {
+  let someOrError = v => {
+    let* v = v;
+    switch (v) {
     | Some(v) => Ok(v)
     | None =>
       let msg =
@@ -202,6 +206,7 @@ let resolve = (~basedir=?, req) => {
         );
       Error(`Msg(msg));
     };
+  };
 
   let res =
     switch (req) {

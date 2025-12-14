@@ -174,34 +174,4 @@ module Formula = {
     let* input = take_while1(_ => true);
     return(parseExn(input));
   };
-
-  let%test_module "parse" =
-    (module
-     {
-       let v = Version.parseExn;
-
-       let parsesOk = (f, e) => {
-         let pf = parseExn(f);
-         if (pf != e) {
-           failwith("Received: " ++ DNF.show(pf));
-         } else {
-           ();
-         };
-       };
-
-       let%test_unit _ = parsesOk(">=1.7.0", [[C.GTE(v("1.7.0"))]]);
-       let%test_unit _ = parsesOk("*", [[C.ANY]]);
-       let%test_unit _ = parsesOk("", [[C.ANY]]);
-     });
-
-  let%test_module "matches" =
-    (module
-     {
-       let v = Version.parseExn;
-       let f = parseExn;
-
-       let%test _ = DNF.matches(~version=v("1.8.0"), f(">=1.7.0"));
-       let%test _ = DNF.matches(~version=v("0.3"), f("=0.3"));
-       let%test _ = DNF.matches(~version=v("0.3"), f("0.3"));
-     });
 };

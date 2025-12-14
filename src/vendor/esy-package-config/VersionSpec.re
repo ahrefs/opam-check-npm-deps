@@ -38,20 +38,20 @@ module Parse = {
     /* npm dist tags can be any strings which cannot be npm version ranges,
      * this is a simplified check for that. */
     let p = {
-      let%map tag = take_while1(_ => true);
-      NpmDistTag(tag);
+      take_while1(_ => true) >>| (tag => NpmDistTag(tag));
     };
 
-    switch%bind (peek_char_fail) {
-    | 'v'
-    | '0' .. '9' => fail("unable to parse npm tag")
-    | _ => p
-    };
+    peek_char_fail
+    >>= (
+      fun
+      | 'v'
+      | '0' .. '9' => fail("unable to parse npm tag")
+      | _ => p
+    );
   };
 
   let sourceSpec = {
-    let%map sourceSpec = SourceSpec.parser;
-    Source(sourceSpec);
+    SourceSpec.parser >>| (sourceSpec => Source(sourceSpec));
   };
 
   let opamConstraint = {

@@ -154,7 +154,7 @@ let rec rename = (~attempts=8, ~skipIfExists=false, ~src, target) => {
   open RunAsync.Syntax;
   let srcString = Path.show(src);
   let targetString = Path.show(target);
-  let%bind destExists = exists(target);
+  let* destExists = exists(target);
   if (skipIfExists && destExists) {
     let%lwt () = Esy_logs_lwt.debug(m => m("Dest (%s) exists", targetString));
     RunAsync.return();
@@ -196,7 +196,8 @@ let rec rename = (~attempts=8, ~skipIfExists=false, ~src, target) => {
         RunAsync.errorf("Unable to rename %s to %s", srcString, targetString);
       };
     | Unix.Unix_error(Unix.EACCES, "rename", _) when attempts > 1 =>
-      if%bind (exists(target)) {
+      let* exists = exists(target);
+      if (exists) {
         let%lwt () =
           Esy_logs_lwt.debug(m => m("Dest (%s) exists", targetString));
         RunAsync.return();
@@ -204,7 +205,7 @@ let rec rename = (~attempts=8, ~skipIfExists=false, ~src, target) => {
         let%lwt () = Lwt_unix.sleep(1.);
         let attempts = attempts - 1;
         rename(~attempts, ~skipIfExists, ~src, target);
-      }
+      };
     };
   };
 };
@@ -444,7 +445,8 @@ let randomPathVariation = path => {
     let rand = Random.State.bits(Lazy.force(randGen)) land 0xFFFFFF;
     let ext = Astring.strf(".%06x", rand);
     let rpath = Path.(path |> addExt(ext));
-    if%bind (exists(rpath)) {
+    let* exists = exists(rpath);
+    if (exists) {
       if (retry <= 0) {
         errorf("unable to generate a random path for %a", Path.pp, path);
       } else {

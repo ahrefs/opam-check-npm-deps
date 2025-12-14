@@ -15,15 +15,22 @@ let ofDir = base => {
   let rec loop = sub => {
     open RunAsync.Syntax;
     let root = Path.(base /\/ sub);
-    if%bind (Fs.exists(root)) {
+    let* exists = Fs.exists(root);
+    if (exists) {
       let* files = Fs.listDir(root);
-      let f = name =>
-        if%bind (Fs.isDir(Path.(root / name))) {
+      let f = name => {
+        let* isDir = Fs.isDir(Path.(root / name));
+        if (isDir) {
           loop(Path.(sub / name));
         } else {
-          return([{name: Path.(sub / name), root: base}]);
+          return([
+            {
+              name: Path.(sub / name),
+              root: base,
+            },
+          ]);
         };
-
+      };
       let* lists = RunAsync.List.mapAndJoin(~concurrency=20, ~f, files);
       return(List.concat(lists));
     } else {

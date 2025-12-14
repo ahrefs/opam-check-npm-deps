@@ -129,28 +129,4 @@ module Override: {
     let ppItem = Fmt.(pair(~sep=any(": "), string, ppOverride));
     Fmt.braces(pp(~sep=Fmt.any(", "), ppItem));
   };
-
-  let%test "apply: add key" = {
-    let orig = empty |> add("a", "b");
-    let override = empty |> add("c", Edit("d"));
-    let result = apply(orig, override);
-    let expect = empty |> add("a", "b") |> add("c", "d");
-    compare_stringMap(String.compare, result, expect) == 0;
-  };
-
-  let%test "apply: drop key" = {
-    let orig = empty |> add("a", "b") |> add("c", "d");
-    let override = empty |> add("c", Drop);
-    let result = apply(orig, override);
-    let expect = empty |> add("a", "b");
-    compare_stringMap(String.compare, result, expect) == 0;
-  };
-
-  let%test "apply: replace key" = {
-    let orig = empty |> add("a", "b") |> add("c", "d");
-    let override = empty |> add("c", Edit("d!"));
-    let result = apply(orig, override);
-    let expect = empty |> add("a", "b") |> add("c", "d!");
-    compare_stringMap(String.compare, result, expect) == 0;
-  };
 };

@@ -14,11 +14,16 @@ let const = (v, _) => return(v);
 let maybe = p => option(None, p >>| (v => Some(v)));
 
 let failIf = (msg, p) => {
-  if%bind (option(false, p >> return(true))) {
-    fail(msg);
-  } else {
-    return();
-  };
+  option(false, p >> return(true))
+  >>= (
+    fun
+    | true => {
+        fail(msg);
+      }
+    | false => {
+        return();
+      }
+  );
 };
 
 let till = (c, p) => {

@@ -48,7 +48,7 @@ type t =
 let to_yojson = source =>
   Json.Encode.(
     switch (source) {
-    | Link({path, manifest, kind}) =>
+    | Link({ path, manifest, kind }) =>
       let typ =
         switch (kind) {
         | LinkRegular => field("type", string, "link")
@@ -60,7 +60,7 @@ let to_yojson = source =>
         field("path", DistPath.to_yojson, path),
         fieldOpt("manifest", ManifestSpec.to_yojson, manifest),
       ]);
-    | Install({source: (source, mirrors), opam}) =>
+    | Install({ source: (source, mirrors), opam }) =>
       assoc([
         field("type", string, "install"),
         field(
@@ -76,26 +76,46 @@ let to_yojson = source =>
 let of_yojson = json => {
   open Result.Syntax;
   open Json.Decode;
-  switch%bind (fieldWith(~name="type", string, json)) {
+  let* field = fieldWith(~name="type", string, json);
+  switch (field) {
   | "install" =>
-    let* source =
-      switch%bind (fieldWith(~name="source", list(Dist.of_yojson), json)) {
+    let* source = {
+      let* field = fieldWith(~name="source", list(Dist.of_yojson), json);
+      switch (field) {
       | [source, ...mirrors] => return((source, mirrors))
       | _ => errorf("invalid source configuration")
       };
+    };
 
     let* opam = fieldOptWith(~name="opam", opam_of_yojson, json);
-    Ok(Install({source, opam}));
+    Ok(
+      Install({
+        source,
+        opam,
+      }),
+    );
   | "link" =>
     let* path = fieldWith(~name="path", DistPath.of_yojson, json);
     let* manifest =
       fieldOptWith(~name="manifest", ManifestSpec.of_yojson, json);
-    Ok(Link({path, manifest, kind: LinkRegular}));
+    Ok(
+      Link({
+        path,
+        manifest,
+        kind: LinkRegular,
+      }),
+    );
   | "link-dev" =>
     let* path = fieldWith(~name="path", DistPath.of_yojson, json);
     let* manifest =
       fieldOptWith(~name="manifest", ManifestSpec.of_yojson, json);
-    Ok(Link({path, manifest, kind: LinkDev}));
+    Ok(
+      Link({
+        path,
+        manifest,
+        kind: LinkDev,
+      }),
+    );
   | typ => errorf("unknown source type: %s", typ)
   };
 };

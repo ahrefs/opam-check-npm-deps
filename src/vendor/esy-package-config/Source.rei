@@ -13,7 +13,6 @@ include S.COMMON with type t := t;
 
 let relaxed_of_yojson: Json.decoder(t);
 
-let sexp_of_t: t => Sexplib0.Sexp.t;
 let ppPretty: Fmt.t(t);
 
 let parser: Parse.t(t);

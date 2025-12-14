@@ -89,12 +89,14 @@ module List = {
   };
   let filter = (~f, xs) => {
     open Syntax;
-    let f = (xs, x) =>
-      if%bind (f(x)) {
+    let f = (xs, x) => {
+      let* pred = f(x);
+      if (pred) {
         return([x, ...xs]);
       } else {
         return(xs);
       };
+    };
     let* xs = foldLeft(~f, ~init=[], xs);
     return(List.rev(xs));
   };

@@ -133,7 +133,8 @@ let head = url => {
       % "--location"
       % url
     );
-  switch%bind (runCurl(cmd)) {
+  let* curlResult = runCurl(cmd);
+  switch (curlResult) {
   | Success(response) => return(parseResponse(response))
   | NotFound => RunAsync.error("not found")
   };
@@ -141,7 +142,8 @@ let head = url => {
 
 let get = (~accept=?, url) => {
   open RunAsync.Syntax;
-  switch%bind (getOrNotFound(~accept?, url)) {
+  let* getResult = getOrNotFound(~accept?, url);
+  switch (getResult) {
   | Success(result) => RunAsync.return(result)
   | NotFound => RunAsync.error("not found")
   };
@@ -166,7 +168,8 @@ let download = (~output, url) => {
       % "--output"
       % output
     );
-  switch%bind (runCurl(cmd)) {
+  let* downloadResult = runCurl(cmd);
+  switch (downloadResult) {
   | Success(_) => RunAsync.return()
   | NotFound => RunAsync.error("not found")
   };

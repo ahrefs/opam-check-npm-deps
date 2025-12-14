@@ -15,7 +15,6 @@ module Version: {
   include VersionBase.VERSION with type t := t;
 
   let parse: string => result(t, string);
-  let sexp_of_t: t => Sexplib0.Sexp.t;
 };
 
 module Constraint: VersionBase.CONSTRAINT with type version = Version.t;

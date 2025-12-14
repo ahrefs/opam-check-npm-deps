@@ -1,6 +1,4 @@
-open Sexplib0.Sexp_conv;
-
-[@deriving (ord, sexp_of)]
+[@deriving ord]
 type t = (kind, string)
 and kind =
   | Md5
