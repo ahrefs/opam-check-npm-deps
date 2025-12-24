@@ -43,43 +43,16 @@ let context = (line, v) =>
   | Error((msg, context)) => Error((msg, [Line(line), ...context]))
   };
 
-let contextf = (v, fmt) => {
-  let kerr = _ => context(Format.flush_str_formatter(), v);
-  Format.kfprintf(kerr, Format.str_formatter, fmt);
-};
-
-let bind = (~f, v) =>
-  switch (v) {
-  | Ok(v) => f(v)
-  | Error(err) => Error(err)
-  };
-
-let map = (~f, v) =>
-  switch (v) {
-  | Ok(v) => Ok(f(v))
-  | Error(err) => Error(err)
-  };
-
-let withContextOfLog = (~header="Log output:", content, v) =>
-  switch (v) {
-  | Ok(v) => Ok(v)
-  | [@implicit_arity] Error(msg, context) =>
-    let item = [@implicit_arity] LogOutput(header, content);
-    [@implicit_arity] Error(msg, [item, ...context]);
-  };
-
-let formatError = error => Format.asprintf("%a", ppError, error);
-
 let ofStringError = v =>
   switch (v) {
   | Ok(v) => Ok(v)
-  | Error(line) => [@implicit_arity] Error(line, [])
+  | Error(line) => Error((line, []))
   };
 
 let ofBosError = v =>
   switch (v) {
   | Ok(v) => Ok(v)
-  | Error(`Msg(line)) => [@implicit_arity] Error(line, [])
+  | Error(`Msg(line)) => Error((line, []))
   | Error(`CommandError(cmd, status)) =>
     let line =
       Format.asprintf(
@@ -90,26 +63,10 @@ let ofBosError = v =>
         status,
       );
 
-    [@implicit_arity] Error(line, []);
+    Error((line, []));
   };
 
-let ofOption = (~err=?) =>
-  fun
-  | Some(v) => return(v)
-  | None => {
-      let err =
-        switch (err) {
-        | Some(err) => err
-        | None => "not found"
-        };
-      error(err);
-    };
-
-let toResult =
-  fun
-  | Ok(v) => Ok(v)
-  | Error(err) => Error(formatError(err));
-
+let formatError = error => Format.asprintf("%a", ppError, error);
 let runExn = (~err=?) =>
   fun
   | Ok(v) => v
@@ -122,15 +79,3 @@ let runExn = (~err=?) =>
 
       failwith(formatError((msg, ctx)));
     };
-
-module Syntax = {
-  let return = return;
-  let error = error;
-  let errorf = errorf;
-  let ( let* ) = (v, f) => bind(~f, v);
-
-  module Let_syntax = {
-    let bind = bind;
-    let map = map;
-  };
-};

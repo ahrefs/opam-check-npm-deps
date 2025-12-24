@@ -39,7 +39,7 @@
               nativeBuildInputs = [ reason ];
               propagatedBuildInputs = [
                 opam-client
-                mccs
+                lwt
                 angstrom
                 fmt
                 bos
