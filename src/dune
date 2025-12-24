@@ -2,4 +2,4 @@
  (name main)
  (public_name opam-check-npm-deps)
  (package opam-check-npm-deps)
- (libraries EsyPackageConfig opam-client yojson))
+ (libraries EsyPackageConfig opam-client lwt.unix bos yojson))
