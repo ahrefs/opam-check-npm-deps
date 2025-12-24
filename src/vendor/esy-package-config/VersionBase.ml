@@ -112,7 +112,7 @@ module Constraint = struct
            then matchesSimple ~version constr
            else false
 
-    let rec map ~f =
+    let map ~f =
      fun constr ->
       match constr with
       | EQ a -> EQ (f a)
@@ -170,7 +170,7 @@ module Formula = struct
         in
         List.exists ~f:matchesConj formulas
 
-      let rec map ~f =
+      let map ~f =
        fun formulas ->
         let mapConj formulas = List.map ~f:(Constraint.map ~f) formulas in
         List.map ~f:mapConj formulas
