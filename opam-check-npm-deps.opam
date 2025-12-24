@@ -14,11 +14,10 @@ depends: [
   "reason" {>= "3.8.1"}
   "dune" {>= "3.8"}
   "opam-client" {>= "2.5" & < "2.6"}
-  "mccs" {>= "1.1+14"}
   "angstrom" {>= "0.15.0"}
   "fmt" {>= "0.9.0"}
+  "lwt" {>= "5.0"}
   "bos"
-  "lwt_ppx"
   "ppx_deriving_yojson"
   "odoc" {with-doc}
 ]

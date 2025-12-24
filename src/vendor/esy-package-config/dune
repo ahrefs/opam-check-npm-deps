@@ -1,18 +1,13 @@
 (library
  (name EsyPackageConfig)
- (flags
-  (:standard
-   (-w -39)
-   "-open"
-   "EsyLib"))
+ (flags :standard -w -39)
  (libraries
-  EsyLib
   angstrom
   str
+  bos
   ppx_deriving_yojson.runtime
   yojson
-  esy_logs
-  opam-format
-  opam-file-format)
+  lwt.unix
+  re)
  (preprocess
-  (pps lwt_ppx ppx_deriving.std ppx_deriving_yojson)))
+  (pps ppx_deriving.std ppx_deriving_yojson)))
