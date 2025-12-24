@@ -2,4 +2,5 @@
 
 (name opam-check-npm-deps)
 
-(source (github jchavarri/opam-check-npm-deps))
+(source
+ (github jchavarri/opam-check-npm-deps))

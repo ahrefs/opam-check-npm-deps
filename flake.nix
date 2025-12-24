@@ -36,14 +36,13 @@
                 };
 
               doCheck = false; # we don't initialize OPAM
-              nativeBuildInputs = [ reason ];
               propagatedBuildInputs = [
                 opam-client
                 lwt
                 angstrom
                 fmt
                 bos
-                ppx_deriving_yojson
+                yojson
               ];
             };
           };
