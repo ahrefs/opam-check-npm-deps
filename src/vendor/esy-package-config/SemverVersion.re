@@ -12,15 +12,6 @@ module Version = {
     | W(string)
     | N(int);
 
-  let ppSegment = fmt =>
-    fun
-    | W(v) => Fmt.string(fmt, v)
-    | N(v) => Fmt.int(fmt, v);
-
-  let ppPrerelease = Fmt.(list(~sep=any("."), ppSegment));
-
-  let ppBuild = Fmt.(list(~sep=any("."), string));
-
   let compareSegment = (a, b) =>
     switch (a, b) {
     | (N(_), W(_)) => (-1)
@@ -36,31 +27,6 @@ module Version = {
     prerelease,
     build,
   };
-
-  let show = v => {
-    let prelease =
-      switch (v.prerelease) {
-      | [] => ""
-      | v => Format.asprintf("-%a", ppPrerelease, v)
-      };
-
-    let build =
-      switch (v.build) {
-      | [] => ""
-      | v => Format.asprintf("+%a", ppBuild, v)
-      };
-
-    Format.asprintf(
-      "%i.%i.%i%s%s",
-      v.major,
-      v.minor,
-      v.patch,
-      prelease,
-      build,
-    );
-  };
-
-  let pp = (fmt, v) => Fmt.pf(fmt, "%s", show(v));
 
   let majorMinorPatch = v => Some((v.major, v.minor, v.patch));
 

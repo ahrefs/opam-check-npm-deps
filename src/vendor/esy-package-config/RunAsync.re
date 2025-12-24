@@ -1,11 +1,11 @@
-type t('a) = Lwt.t(Run.t('a));
+type t('a) = Lwt.t(Result.t('a, string));
 
 let return = v => Lwt.return(Ok(v));
 
-let error = msg => Lwt.return(Run.error(msg));
+let error = msg => Lwt.return(Result.error(msg));
 
 let errorf = fmt => {
-  let kerr = _ => Lwt.return(Run.error(Format.flush_str_formatter()));
+  let kerr = _ => Lwt.return(Result.error(Format.flush_str_formatter()));
   Format.kfprintf(kerr, Format.str_formatter, fmt);
 };
 
@@ -18,8 +18,6 @@ let bind = (~f, v) => {
   Lwt.bind(v, waitForPromise);
 };
 
-let ofRun = Lwt.return;
-
 module Syntax = {
   let return = return;
   let error = error;
@@ -28,6 +26,15 @@ module Syntax = {
 };
 
 let runExn = (~err=?, v) => {
-  let v = Lwt_main.run(v);
-  Run.runExn(~err?, v);
+  switch (Lwt_main.run(v)) {
+  | Ok(v) => v
+  | Error(msg) =>
+    let msg =
+      switch (err) {
+      | Some(err) => err ++ ": " ++ msg
+      | None => msg
+      };
+
+    failwith(msg);
+  };
 };

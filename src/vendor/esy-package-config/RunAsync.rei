@@ -2,7 +2,7 @@
  * An async computation which might result in an error.
  */
 
-type t('a) = Lwt.t(Run.t('a));
+type t('a) = Lwt.t(Result.t('a, string));
 
 /**
  * Computation which results in a value.
@@ -23,12 +23,6 @@ let error: string => t('a);
  */
 
 let runExn: (~err: string=?, t('a)) => 'a;
-
-/**
- * Convert [Run.t] into [t].
- */
-
-let ofRun: Run.t('a) => t('a);
 
 /**
  * Convenience module which is designed to be openned locally with the
@@ -54,4 +48,3 @@ module Syntax: {
   let errorf: format4('a, Format.formatter, unit, t('v)) => 'a;
   let ( let* ): (t('a), 'a => t('b)) => t('b);
 };
-

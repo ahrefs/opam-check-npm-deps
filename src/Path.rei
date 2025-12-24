@@ -12,4 +12,4 @@ let currentPath: unit => t;
 
 let showNormalized: t => string;
 
-include S.PRINTABLE with type t := t;
+let show: t => string;

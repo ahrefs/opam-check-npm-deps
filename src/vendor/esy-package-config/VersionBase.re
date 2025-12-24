@@ -3,7 +3,7 @@ module List = ListLabels
 module type VERSION = {
   type t;
 
-  include S.COMMON with type t := t;
+  let compare: (t, t) => int;
 
   let parser: Angstrom.t(t);
   let parse: string => result(t, string);
@@ -26,7 +26,7 @@ module type CONSTRAINT = {
     | LTE(version)
     | ANY;
 
-  include S.COMMON with type t := t;
+  let compare: (t, t) => int;
 
   module VersionSet: Set.S with type elt = version;
 
@@ -48,7 +48,7 @@ module type FORMULA = {
   module DNF: {
     type t = disj(conj(constr));
 
-    include S.COMMON with type t := t;
+    let compare: (t, t) => int;
 
     let unit: constr => t;
     let matches: (~version: version, t) => bool;
@@ -61,7 +61,7 @@ module type FORMULA = {
   module CNF: {
     type t = conj(disj(constr));
 
-    include S.COMMON with type t := t;
+    let compare: (t, t) => int;
 
     let matches: (~version: version, t) => bool;
   };
@@ -93,16 +93,6 @@ module Constraint = {
       | LT(Version.t)
       | LTE(Version.t)
       | ANY;
-
-    let pp = fmt =>
-      fun
-      | EQ(v) => Fmt.pf(fmt, "=%a", Version.pp, v)
-      | NEQ(v) => Fmt.pf(fmt, "!=%a", Version.pp, v)
-      | GT(v) => Fmt.pf(fmt, ">%a", Version.pp, v)
-      | GTE(v) => Fmt.pf(fmt, ">=%a", Version.pp, v)
-      | LT(v) => Fmt.pf(fmt, "<%a", Version.pp, v)
-      | LTE(v) => Fmt.pf(fmt, "<=%a", Version.pp, v)
-      | ANY => Fmt.pf(fmt, "*");
 
     let matchesSimple = (~version, constr) =>
       switch (constr) {
@@ -138,8 +128,6 @@ module Constraint = {
         }
       };
 
-    let show = v => Format.asprintf("%a", pp, v);
-
     let rec map = (~f, constr) =>
       switch (constr) {
       | EQ(a) => EQ(f(a))
@@ -167,11 +155,9 @@ module Formula = {
     type version = Constraint.version;
     type constr = Constraint.t;
 
-    [@ocaml.warning "-32"];
     [@deriving (show, ord)]
     type conj('f) = list('f);
 
-    [@ocaml.warning "-32"];
     [@deriving (show, ord)]
     type disj('f) = list('f);
 
@@ -220,32 +206,6 @@ module Formula = {
         List.exists(~f=matchesConj, formulas);
       };
 
-      let pp = (fmt, f) => {
-        let ppConjDefault = Fmt.(list(~sep=any(" "), Constraint.pp));
-        let ppConj = (fmt, conj) =>
-          switch (conj) {
-          | [Constraint.GTE(a), Constraint.LT(b)] =>
-            switch (
-              Version.majorMinorPatch(a),
-              Version.majorMinorPatch(b),
-              Version.prerelease(b),
-            ) {
-            | (Some((0, aMinor, _)), Some((0, bMinor, 0)), false)
-                when bMinor - aMinor == 1 =>
-              Fmt.pf(fmt, "^%a", Version.pp, a)
-            | (Some((aMajor, _, _)), Some((bMajor, 0, 0)), false)
-                when aMajor > 0 && bMajor > 0 && bMajor - aMajor == 1 =>
-              Fmt.pf(fmt, "^%a", Version.pp, a)
-            | _ => ppConjDefault(fmt, conj)
-            }
-          | _ => ppConjDefault(fmt, conj)
-          };
-
-        Fmt.(list(~sep=any(" || "), ppConj))(fmt, f);
-      };
-
-      let show = f => Format.asprintf("%a", pp, f);
-
       let rec map = (~f, formulas) => {
         let mapConj = formulas => List.map(~f=Constraint.map(~f), formulas);
         List.map(~f=mapConj, formulas);
@@ -269,27 +229,8 @@ module Formula = {
     };
 
     module CNF = {
-      [@ocaml.warning "-32"];
       [@deriving ord]
       type t = conj(disj(Constraint.t));
-
-      let pp = (fmt, f) => {
-        let ppDisj = fmt =>
-          fun
-          | [] => Fmt.any("true", fmt, ())
-          | [disj] => Constraint.pp(fmt, disj)
-          | disjs =>
-            Fmt.pf(
-              fmt,
-              "(%a)",
-              Fmt.(list(~sep=any(" || "), Constraint.pp)),
-              disjs,
-            );
-
-        Fmt.(list(~sep=any(" && "), ppDisj))(fmt, f);
-      };
-
-      let show = f => Format.asprintf("%a", pp, f);
 
       let matches = (~version, formulas) => {
         let matchesDisj = formulas => {

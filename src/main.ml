@@ -14,11 +14,38 @@ module Of_package_json = struct
   type t = { version : string [@default "0.0.0"] }
   [@@deriving of_yojson { strict = false }]
 
+  let readJsonFile =
+    let toRunAsync ?(desc = "I/O failed") =
+     fun promise ->
+      let open EsyPackageConfig.RunAsync.Syntax in
+      Lwt.catch
+        (fun () ->
+          let open Lwt.Infix in
+          promise () >>= return)
+        (function
+          | ((Unix.Unix_error (err, _, _)) [@explicit_arity]) ->
+              let msg = Unix.error_message err in
+              error (Printf.sprintf "%s: %s" desc msg)
+          | _ -> assert false)
+    in
+    let readFile (path : Path.t) =
+      let path = Path.show path in
+      let desc = Printf.sprintf "Unable to read file %s" path in
+      toRunAsync ~desc (fun () ->
+          let f ic = Lwt_io.read ic in
+          Lwt_io.with_file ~mode:Lwt_io.Input path f)
+    in
+    fun (path : Path.t) ->
+      let open EsyPackageConfig.RunAsync.Syntax in
+      let* data = readFile path in
+      try return (Yojson.Safe.from_string data)
+      with Yojson.Json_error msg ->
+        errorf "error reading JSON file: %s@\n%s" (Path.show path) msg
+
   let read_version path =
-    let open EsyPackageConfig in
     let open EsyPackageConfig.RunAsync.Syntax in
-    let* json = Fs.readJsonFile path in
-    let* pkgJson = RunAsync.ofRun (Run.ofStringError (of_yojson json)) in
+    let* json = readJsonFile path in
+    let* pkgJson = Lwt.return (of_yojson json) in
     return pkgJson.version
 end
 
@@ -109,7 +136,7 @@ let check_npm_deps cli =
                   OpamSysPkg.Set.iter
                     (fun npm_pkg ->
                       let path =
-                        EsyPackageConfig.Path.(
+                        Path.(
                           currentPath () / "node_modules"
                           / OpamSysPkg.to_string npm_pkg
                           / "package.json")
@@ -130,7 +157,7 @@ let check_npm_deps cli =
                              can not be found\n"
                             (OpamPackage.to_string opam_pkg)
                             (OpamSysPkg.to_string npm_pkg)
-                            npm_constraint (EsyPackageConfig.Path.showNormalized path)
+                            npm_constraint (Path.showNormalized path)
                       | Ok installed_version -> (
                           match
                             match_version_against_constraint installed_version
@@ -153,7 +180,7 @@ let check_npm_deps cli =
                                  \"%s\"\n"
                                 (OpamPackage.to_string opam_pkg)
                                 (OpamSysPkg.to_string npm_pkg)
-                                npm_constraint (EsyPackageConfig.Path.showNormalized path)
+                                npm_constraint (Path.showNormalized path)
                                 installed_version))
                     npm_pkgs)
                 npm_pkgs_and_constraints)
@@ -166,8 +193,6 @@ let check_npm_deps cli =
   in
   OpamArg.mk_command ~cli OpamArg.cli_original "opam-check-npm-deps" ~doc ~man
     Term.(const check_npm_deps $ dry_run)
-
-[@@@ocaml.warning "-3"]
 
 let () =
   Stdlib.Option.iter OpamVersion.set_git OpamGitVersion.version;

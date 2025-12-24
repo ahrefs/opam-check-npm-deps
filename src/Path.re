@@ -11,17 +11,15 @@ let currentPath = () =>
     failwith("Unable to determine current working dir: " ++ msg)
   };
 
-let backSlashRegex = Str.regexp("\\\\");
-
-let normalizePathSepOfFilename = p =>
-  Str.global_replace(backSlashRegex, "/", p);
-
-/* PRINTABLE */
-
 let show = Fpath.to_string;
-let pp = Fpath.pp;
 
-let showNormalized = p => {
-  let p = show(p);
-  normalizePathSepOfFilename(p);
+let showNormalized = {
+  let backSlashRegex = Str.regexp("\\\\");
+  let normalizePathSepOfFilename = p =>
+    Str.global_replace(backSlashRegex, "/", p);
+
+  p => {
+    let p = show(p);
+    normalizePathSepOfFilename(p);
+  }
 };

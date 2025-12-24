@@ -11,7 +11,7 @@
 module type VERSION = {
   type t;
 
-  include S.COMMON with type t := t;
+  let compare: (t, t) => int;
 
   let parser: Angstrom.t(t);
   let parse: string => result(t, string);
@@ -37,7 +37,7 @@ module type CONSTRAINT = {
     | LTE(version)
     | ANY;
 
-  include S.COMMON with type t := t;
+  let compare: (t, t) => int;
 
   module VersionSet: Set.S with type elt = version;
 
@@ -67,7 +67,7 @@ module type FORMULA = {
   module DNF: {
     type t = disj(conj(constr));
 
-    include S.COMMON with type t := t;
+    let compare: (t, t) => int;
 
     let unit: constr => t;
     let matches: (~version: version, t) => bool;
@@ -84,7 +84,7 @@ module type FORMULA = {
   module CNF: {
     type t = conj(disj(constr));
 
-    include S.COMMON with type t := t;
+    let compare: (t, t) => int;
 
     let matches: (~version: version, disj(disj(constr))) => bool;
   };
