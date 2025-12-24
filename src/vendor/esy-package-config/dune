@@ -1,5 +1,3 @@
 (library
  (name EsyPackageConfig)
- (libraries angstrom str bos yojson lwt.unix re)
- (preprocess
-  (pps ppx_deriving.std)))
+ (libraries angstrom str bos yojson lwt.unix re))

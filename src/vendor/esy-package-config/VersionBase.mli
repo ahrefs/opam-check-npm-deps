@@ -30,8 +30,6 @@ module type CONSTRAINT = sig
     | LTE of version
     | ANY
 
-  val compare : t -> t -> int
-
   module VersionSet : Set.S with type elt = version
 
   val matchesSimple : version:version -> t -> bool
@@ -49,7 +47,6 @@ module type FORMULA = sig
   module DNF : sig
     type t = constr conj disj
 
-    val compare : t -> t -> int
     val unit : constr -> t
     val matches : version:version -> t -> bool
     val map : f:(version -> version) -> t -> t
@@ -61,7 +58,6 @@ module type FORMULA = sig
   module CNF : sig
     type t = constr disj conj
 
-    val compare : t -> t -> int
     val matches : version:version -> constr disj disj -> bool
   end
   [@@ocaml.doc "\n   * Conjunction normal form.\n   "]

@@ -43,7 +43,6 @@
                 fmt
                 bos
                 yojson
-                ppx_deriving
               ];
             };
           };

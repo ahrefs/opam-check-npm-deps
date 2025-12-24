@@ -17,7 +17,6 @@ depends: [
   "fmt" {>= "0.9.0"}
   "lwt" {>= "5.0"}
   "bos"
-  "ppx_deriving"
   "yojson"
   "odoc" {with-doc}
 ]
