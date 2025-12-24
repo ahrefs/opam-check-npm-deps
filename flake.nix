@@ -5,18 +5,26 @@
     nixpkgs.url = "github:nix-ocaml/nix-overlays";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
-      forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system}.extend (self: super: {
-            ocamlPackages = super.ocaml-ng.ocamlPackages_5_3;
-          });
-        in
-        f pkgs);
+      forAllSystems =
+        f:
+        nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (
+          system:
+          let
+            pkgs = nixpkgs.legacyPackages.${system}.extend (
+              self: super: {
+                ocamlPackages = super.ocaml-ng.ocamlPackages_5_3;
+              }
+            );
+          in
+          f pkgs
+        );
     in
     {
-      packages = forAllSystems (pkgs:
+      packages = forAllSystems (
+        pkgs:
         let
           packages = with pkgs.ocamlPackages; {
             opam-check-npm-deps = buildDunePackage {
@@ -24,7 +32,9 @@
               version = "n/a";
 
               src =
-                let fs = pkgs.lib.fileset; in
+                let
+                  fs = pkgs.lib.fileset;
+                in
                 fs.toSource {
                   root = ./.;
                   fileset = fs.unions [
@@ -47,22 +57,38 @@
             };
           };
         in
-        packages // { default = packages.opam-check-npm-deps; });
+        packages // { default = packages.opam-check-npm-deps; }
+      );
 
-      devShells = forAllSystems (pkgs:
+      devShells = forAllSystems (
+        pkgs:
         let
-          makeDevShell = { packages, release-mode ? false }:
+          makeDevShell =
+            {
+              packages,
+              release-mode ? false,
+            }:
             pkgs.mkShell {
               inputsFrom = pkgs.lib.attrValues packages;
               nativeBuildInputs =
-                with pkgs.ocamlPackages; [ ocamlformat pkgs.nodejs_24 ocaml dune ]
-                  ++ pkgs.lib.optionals release-mode (with pkgs; [
-                  cacert
-                  curl
-                  ocamlPackages.dune-release
-                  ocamlPackages.odoc
-                  git
-                ]);
+                with pkgs.ocamlPackages;
+                [
+                  ocamlformat
+                  pkgs.nodejs_24
+                  ocaml
+                  dune
+                  merlin
+                ]
+                ++ pkgs.lib.optionals release-mode (
+                  with pkgs;
+                  [
+                    cacert
+                    curl
+                    ocamlPackages.dune-release
+                    ocamlPackages.odoc
+                    git
+                  ]
+                );
             };
           packages = self.packages.${pkgs.stdenv.hostPlatform.system};
         in
@@ -72,6 +98,7 @@
             inherit packages;
             release-mode = true;
           };
-        });
+        }
+      );
     };
 }

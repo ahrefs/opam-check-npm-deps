@@ -1,3 +1,8 @@
+## v4.1.0 (2025-12-23)
+
+- Support opam 2.5
+- Remove most vendored code, keep only the semver parser
+
 ## v4.0.1 (2025-09-30)
 
 - Fix syntax error after reason/ppx_let upstream changes.
