@@ -84,7 +84,7 @@ module Constraint = {
 
     type version = Version.t;
 
-    [@deriving (yojson, ord)]
+    [@deriving ord]
     type t =
       | EQ(Version.t)
       | NEQ(Version.t)
@@ -168,17 +168,17 @@ module Formula = {
     type constr = Constraint.t;
 
     [@ocaml.warning "-32"];
-    [@deriving (show, yojson, ord)]
+    [@deriving (show, ord)]
     type conj('f) = list('f);
 
     [@ocaml.warning "-32"];
-    [@deriving (show, yojson, ord)]
+    [@deriving (show, ord)]
     type disj('f) = list('f);
 
     module VersionSet = Constraint.VersionSet;
 
     module DNF = {
-      [@deriving (yojson, ord)]
+      [@deriving ord]
       type t = disj(conj(Constraint.t));
 
       let unit = constr => [[constr]];
@@ -270,7 +270,7 @@ module Formula = {
 
     module CNF = {
       [@ocaml.warning "-32"];
-      [@deriving (yojson, ord)]
+      [@deriving ord]
       type t = conj(disj(Constraint.t));
 
       let pp = (fmt, f) => {

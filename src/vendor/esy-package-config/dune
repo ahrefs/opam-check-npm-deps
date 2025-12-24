@@ -5,9 +5,7 @@
   angstrom
   str
   bos
-  ppx_deriving_yojson.runtime
   yojson
   lwt.unix
   re)
- (preprocess
-  (pps ppx_deriving.std ppx_deriving_yojson)))
+ (preprocess (pps ppx_deriving.std)))

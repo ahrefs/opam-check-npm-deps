@@ -290,14 +290,6 @@ module Version = {
       }
     | v => v
     };
-
-  let of_yojson = json =>
-    switch (json) {
-    | `String(v) => parse(v)
-    | _ => Error("expected string")
-    };
-
-  let to_yojson = v => `String(show(v));
 };
 
 module Constraint = VersionBase.Constraint.Make(Version);
