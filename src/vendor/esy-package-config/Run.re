@@ -134,30 +134,3 @@ module Syntax = {
     let map = map;
   };
 };
-
-module List = {
-  let foldLeft = (~f, ~init, xs) => {
-    let rec fold = (acc, xs) =>
-      switch (acc, xs) {
-      | (Error(err), _) => Error(err)
-      | (Ok(acc), []) => Ok(acc)
-      | (Ok(acc), [x, ...xs]) => fold(f(acc, x), xs)
-      };
-
-    fold(Ok(init), xs);
-  };
-
-  let waitAll = xs => {
-    let rec _waitAll = xs =>
-      switch (xs) {
-      | [] => return()
-      | [x, ...xs] =>
-        let f = () => _waitAll(xs);
-        bind(~f, x);
-      };
-
-    _waitAll(xs);
-  };
-
-  let mapAndWait = (~f, xs) => waitAll(List.map(~f, xs));
-};

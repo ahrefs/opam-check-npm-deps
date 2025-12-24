@@ -101,9 +101,3 @@ module Syntax: {
   };
 };
 
-module List: {
-  let foldLeft: (~f: ('a, 'b) => t('a), ~init: 'a, list('b)) => t('a);
-
-  let waitAll: list(t(unit)) => t(unit);
-  let mapAndWait: (~f: 'a => t(unit), list('a)) => t(unit);
-};

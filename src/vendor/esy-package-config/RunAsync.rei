@@ -110,25 +110,3 @@ module Syntax: {
   };
 };
 
-/**
- * Work with lists of computations.
- */
-
-module List: {
-  let foldLeft: (~f: ('a, 'b) => t('a), ~init: 'a, list('b)) => t('a);
-
-  let filter:
-    (~concurrency: int=?, ~f: 'a => t(bool), list('a)) => t(list('a));
-
-  let map: (~concurrency: int=?, ~f: 'a => t('b), list('a)) => t(list('b));
-
-  let mapAndJoin:
-    (~concurrency: int=?, ~f: 'a => t('b), list('a)) => t(list('b));
-
-  let mapAndWait:
-    (~concurrency: int=?, ~f: 'a => t(unit), list('a)) => t(unit);
-
-  let waitAll: list(t(unit)) => t(unit);
-  let joinAll: list(t('a)) => t(list('a));
-  let processSeq: (~f: 'a => t(unit), list('a)) => t(unit);
-};
