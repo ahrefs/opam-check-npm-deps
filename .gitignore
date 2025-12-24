@@ -4,3 +4,4 @@ _build
 _opam
 dist/
 .vscode
+*.install
