@@ -1,5 +1,5 @@
 {
-  description = "Reason React Nix Flake";
+  description = "opam-check-npm-deps Nix Flake";
 
   inputs = {
     nixpkgs.url = "github:nix-ocaml/nix-overlays";
