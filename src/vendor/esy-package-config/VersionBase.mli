@@ -75,11 +75,13 @@ end
 [@@ocaml.doc "\n * Formulas over constraints.\n "]
 
 module Constraint : sig
-  module Make : (Version : VERSION) -> CONSTRAINT with type version = Version.t
+  module Make : functor (Version : VERSION) ->
+    CONSTRAINT with type version = Version.t
 end
 
 module Formula : sig
-  module Make : (Version : VERSION)
+  module Make : functor
+    (Version : VERSION)
     (Constraint : CONSTRAINT with type version = Version.t)
     -> FORMULA with type version = Version.t and type constr = Constraint.t
 end
