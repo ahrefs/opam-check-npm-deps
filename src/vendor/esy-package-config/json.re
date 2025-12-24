@@ -143,10 +143,22 @@ module Encode = {
 
   let string = v => `String(v);
 
-  let assoc = fields => {
-    let fields = List.filterNone(fields);
-    `Assoc(fields);
-  };
+  let assoc = {
+    let filterNone = xs => {
+      let rec loop = (o, accum) =>
+        switch (o) {
+        | [] => accum
+        | [Some(v), ...tl] => loop(tl, [v, ...accum])
+        | [None, ...tl] => loop(tl, accum)
+        };
+
+      List.rev(loop(xs, []));
+    };
+
+    fields => {
+      let fields = filterNone(fields);
+      `Assoc(fields);
+  } };
 
   let field = (name, encode, value) => Some((name, encode(value)));
 

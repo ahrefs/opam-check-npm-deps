@@ -17,12 +17,8 @@ let append: (t, t) => t;
 let ofString: string => result(t, [> | `Msg(string)]);
 
 let currentPath: unit => t;
-let homePath: unit => t;
-let dataPath: unit => t;
-let exePath: unit => t;
 
 let isPrefix: (t, t) => bool;
-let remPrefix: (t, t) => option(t);
 
 let isAbs: t => bool;
 let basename: t => string;
@@ -41,8 +37,6 @@ let remExtOfFilename: (~multi: bool=?, string) => string;
 let dirSep: string;
 
 let showNormalized: t => string;
-let showPretty: t => string;
-let ppPretty: Fmt.t(t);
 
 include S.PRINTABLE with type t := t;
 include S.COMPARABLE with type t := t;

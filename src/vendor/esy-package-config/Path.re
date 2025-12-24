@@ -31,23 +31,6 @@ let ofString = v => {
 
 let isAbs = Fpath.is_abs;
 let isPrefix = Fpath.is_prefix;
-let remPrefix = Fpath.rem_prefix;
-
-let homePath = () =>
-  Fpath.v(
-    switch (Sys.getenv_opt("HOME"), System.Platform.host) {
-    | (Some(dir), _) => dir
-    | (None, System.Platform.Windows) => Sys.getenv("USERPROFILE")
-    | (None, _) => failwith("Could not find HOME dir")
-    },
-  );
-let dataPath = () =>
-  Fpath.v(
-    switch (System.Platform.host) {
-    | System.Platform.Windows => Sys.getenv("LOCALAPPDATA")
-    | _ => Sys.getenv("HOME")
-    },
-  );
 
 let currentPath = () =>
   switch (Bos.OS.Dir.current()) {
@@ -55,26 +38,6 @@ let currentPath = () =>
   | Error(`Msg(msg)) =>
     failwith("Unable to determine current working dir: " ++ msg)
   };
-
-let exePath' = () => {
-  switch (Sys.getenv_opt("_")) {
-  | Some(p) => p
-  | None =>
-    switch (System.Platform.host) {
-    | Linux => Unix.readlink("/proc/self/exe")
-    | Darwin
-    | Cygwin
-    | Windows
-    | Unix
-    | Unknown => Sys.argv[0]
-    }
-  // TODO cross-platform solution to getting full path of the current executable.
-  // Linux has /proc/self/exe. Macos ?? Windows GetModuleFileName()
-  // https://stackoverflow.com/a/1024937
-  };
-};
-
-let exePath = () => v @@ exePath'();
 
 let relativize = Fpath.relativize;
 let parent = Fpath.parent;
@@ -119,18 +82,6 @@ let showNormalized = p => {
   let p = show(p);
   normalizePathSepOfFilename(p);
 };
-
-let showPretty = p => {
-  let p =
-    switch (remPrefix(homePath(), p)) {
-    | Some(p) => Fpath.append(Fpath.v("~"), p)
-    | None => p
-    };
-  let p = tryRelativizeToCurrent(p);
-  show(p);
-};
-
-let ppPretty = (fmt, p) => Fmt.string(fmt, showPretty(p));
 
 /* JSONABLE */
 
