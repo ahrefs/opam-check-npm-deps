@@ -3,7 +3,7 @@ module type VERSION = {
 
   include S.COMMON with type t := t;
 
-  let parser: Parse.t(t);
+  let parser: Angstrom.t(t);
   let parse: string => result(t, string);
   let parseExn: string => t;
 

@@ -26,7 +26,7 @@ module Formula: {
 
   let any: DNF.t;
 
-  let parserDnf: Parse.t(DNF.t);
+  let parserDnf: Angstrom.t(DNF.t);
 
   let parse: string => result(DNF.t, string);
   let parseExn: string => DNF.t;

@@ -1,5 +1,3 @@
-module P = Parse;
-
 module Version = {
   type t = {
     major: int,
@@ -225,7 +223,7 @@ module Version = {
 
   let parser = {
     let p = parse;
-    open P;
+    open Angstrom;
     let* input = take_while1(_ => true);
     switch (p(input)) {
     | Ok(v) => return(v)
@@ -580,7 +578,7 @@ module Formula = {
 
   let parserDnf = {
     let p = parse;
-    open P;
+    open Angstrom;
     let* input = take_while1(_ => true);
     switch (p(input)) {
     | Ok(v) => return(v)
