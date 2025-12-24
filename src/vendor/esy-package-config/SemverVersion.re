@@ -125,7 +125,7 @@ module Version = {
   let parsePrerelease = v =>
     v
     |> String.split_on_char('.')
-    |> List.map(~f=v =>
+    |> List.map(v =>
          try(N(int_of_string(v))) {
          | _ => W(v)
          }
@@ -512,7 +512,7 @@ module Formula = {
       let vs = Str.split(Str.regexp(" +"), v);
       let vs = {
         let f = (vs, v) => vs @ parseSimple(v);
-        List.fold_left(~f, ~init=[], vs);
+        List.fold_left(f, [], vs);
       };
 
       vs;

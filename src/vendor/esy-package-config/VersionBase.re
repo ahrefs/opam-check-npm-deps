@@ -1,3 +1,5 @@
+module List = ListLabels 
+
 module type VERSION = {
   type t;
 
