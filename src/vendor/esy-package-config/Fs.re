@@ -1,15 +1,17 @@
 let toRunAsync = (~desc="I/O failed", promise) => {
-  open RunAsync.Syntax;
-  try%lwt(
-    {
-      let%lwt v = promise();
-      return(v);
+  let open RunAsync.Syntax;
+  Lwt.catch(
+    () => {
+      let open Lwt.Infix;
+      promise() >>= return;
+    },
+    fun
+    | Unix.Unix_error(err, _, _) => {
+      let msg = Unix.error_message(err);
+      error(Printf.sprintf("%s: %s", desc, msg));
     }
-  ) {
-  | Unix.Unix_error(err, _, _) =>
-    let msg = Unix.error_message(err);
-    error(Printf.sprintf("%s: %s", desc, msg));
-  };
+    | _ => assert(false)
+  );
 };
 
 let readFile = (path: Path.t) => {
@@ -23,7 +25,6 @@ let readFile = (path: Path.t) => {
     },
   );
 };
-
 
 let readJsonFile = (path: Path.t) => {
   open RunAsync.Syntax;

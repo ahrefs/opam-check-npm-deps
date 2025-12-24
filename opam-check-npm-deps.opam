@@ -18,7 +18,6 @@ depends: [
   "angstrom" {>= "0.15.0"}
   "fmt" {>= "0.9.0"}
   "bos"
-  "lwt_ppx"
   "ppx_deriving_yojson"
   "odoc" {with-doc}
 ]

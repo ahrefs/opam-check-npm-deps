@@ -4,14 +4,10 @@
  (libraries
   angstrom
   str
-  fmt
-  fpath
   bos
-  astring
   ppx_deriving_yojson.runtime
   yojson
   lwt.unix
-  opam-format
-  opam-file-format)
+  re)
  (preprocess
-  (pps lwt_ppx ppx_deriving.std ppx_deriving_yojson)))
+  (pps ppx_deriving.std ppx_deriving_yojson)))

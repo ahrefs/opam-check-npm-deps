@@ -43,7 +43,6 @@
                 angstrom
                 fmt
                 bos
-                lwt_ppx
                 ppx_deriving_yojson
               ];
             };
