@@ -2,5 +2,4 @@
  (name main)
  (public_name opam-check-npm-deps)
  (package opam-check-npm-deps)
- (libraries EsyPackageConfig opam-client)
- (preprocess (pps ppx_deriving_yojson)))
+ (libraries EsyPackageConfig opam-client yojson))

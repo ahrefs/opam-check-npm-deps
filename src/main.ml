@@ -11,21 +11,17 @@ let match_version_against_constraint version formula =
   Formula.DNF.matches ~version:pv pf
 
 module Of_package_json = struct
-  type t = { version : string [@default "0.0.0"] }
-  [@@deriving of_yojson { strict = false }]
-
   let readJsonFile =
     let toRunAsync ?(desc = "I/O failed") =
      fun promise ->
-      let open EsyPackageConfig.RunAsync.Syntax in
       Lwt.catch
         (fun () ->
           let open Lwt.Infix in
-          promise () >>= return)
+          promise () >>= Lwt_result.return)
         (function
-          | ((Unix.Unix_error (err, _, _)) [@explicit_arity]) ->
+          | Unix.Unix_error (err, _, _) ->
               let msg = Unix.error_message err in
-              error (Printf.sprintf "%s: %s" desc msg)
+              Lwt_result.fail (Printf.sprintf "%s: %s" desc msg)
           | _ -> assert false)
     in
     let readFile (path : Path.t) =
@@ -36,17 +32,19 @@ module Of_package_json = struct
           Lwt_io.with_file ~mode:Lwt_io.Input path f)
     in
     fun (path : Path.t) ->
-      let open EsyPackageConfig.RunAsync.Syntax in
+      let open Lwt_result.Syntax in
       let* data = readFile path in
-      try return (Yojson.Safe.from_string data)
+      try Lwt_result.return (Yojson.Safe.from_string data)
       with Yojson.Json_error msg ->
-        errorf "error reading JSON file: %s@\n%s" (Path.show path) msg
+        Lwt_result.fail
+          (Format.asprintf "error reading JSON file: %s@\n%s" (Path.show path)
+             msg)
 
   let read_version path =
-    let open EsyPackageConfig.RunAsync.Syntax in
-    let* json = readJsonFile path in
-    let* pkgJson = Lwt.return (of_yojson json) in
-    return pkgJson.version
+    let open Lwt_result.Syntax in
+    let+ json = readJsonFile path in
+    try Yojson.Safe.Util.member "version" json |> Yojson.Safe.Util.to_string
+    with _ -> "0.0.0"
 end
 
 let depexts nv opams =
@@ -81,6 +79,14 @@ let depexts nv opams =
       []
       (OpamFile.OPAM.depexts opam)
   with Not_found -> []
+
+let runExn ?err =
+ fun v ->
+  match Lwt_main.run v with
+  | Ok v -> v
+  | Error msg ->
+      let msg = match err with Some err -> err ^ ": " ^ msg | None -> msg in
+      failwith msg
 
 let check_npm_deps cli =
   let doc = check_npm_deps_doc in
@@ -142,10 +148,7 @@ let check_npm_deps cli =
                           / "package.json")
                       in
                       let installed_version =
-                        try
-                          Ok
-                            (EsyPackageConfig.RunAsync.runExn
-                               (Of_package_json.read_version path))
+                        try Ok (runExn (Of_package_json.read_version path))
                         with _exn -> Error ()
                       in
                       match installed_version with
