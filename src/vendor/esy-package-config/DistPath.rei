@@ -25,8 +25,6 @@ let ofPath: Path.t => t;
 let make: (~base: Path.t, Path.t) => t;
 let rebase: (~base: t, t) => t;
 
-let sexp_of_t: t => Sexplib0.Sexp.t;
-
 let pp: Fmt.t(t);
 let show: t => string;
 let showPretty: t => string;

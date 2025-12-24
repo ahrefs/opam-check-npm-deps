@@ -45,14 +45,14 @@ let placeAt = (path, file) => {
   open RunAsync.Syntax;
   let src = Path.(file.root /\/ file.name);
   let dst = Path.(path /\/ file.name);
-  let () =
+  /* let () =
     Esy_logs.debug(m =>
       m(
         "Copying file from %s to %s",
         Path.showPretty(src),
         Path.showPretty(dst),
       )
-    );
+    ); */
   let* () = Fs.createDir(Path.parent(dst));
   Fs.copyFile(~src, ~dst);
 };

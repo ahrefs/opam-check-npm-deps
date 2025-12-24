@@ -24,5 +24,3 @@ let show = render;
 let showPretty = path => Path.(normalizePathSepOfFilename(showPretty(path)));
 
 let to_yojson = path => `String(render(path));
-
-let sexp_of_t = path => Sexplib0.Sexp.Atom(render(path));

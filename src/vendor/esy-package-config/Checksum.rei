@@ -11,6 +11,3 @@ include S.COMPARABLE with type t := t;
 
 let parser: Parse.t(t);
 let parse: string => result(t, string);
-
-let computeOfFile: (~kind: kind=?, Path.t) => RunAsync.t(t);
-let checkFile: (~path: Path.t, t) => RunAsync.t(unit);

@@ -1,18 +1,20 @@
 (library
  (name EsyPackageConfig)
- (flags
-  (:standard
-   (-w -39)
-   "-open"
-   "EsyLib"))
+ (flags (:standard (-w -39)))
  (libraries
-  EsyLib
   angstrom
   str
+  fmt
+  fpath
+  bos
+  astring
   ppx_deriving_yojson.runtime
   yojson
-  esy_logs
+  lwt.unix
   opam-format
   opam-file-format)
  (preprocess
-  (pps lwt_ppx ppx_deriving.std ppx_deriving_yojson)))
+  (pps lwt_ppx ppx_deriving.std ppx_deriving_yojson))
+ (foreign_stubs
+  (language c)
+  (names unix_rlimit_patch win32_path)))

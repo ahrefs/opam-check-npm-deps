@@ -19,8 +19,8 @@ let fold' = (~f, ~init, overrides) =>
 let foldWithBuildOverrides = (~f, ~init, overrides) => {
   open RunAsync.Syntax;
   let f = (v, override) => {
-    let%lwt () =
-      Esy_logs_lwt.debug(m => m("build override: %a", Override.pp, override));
+    /* let%lwt () =
+      Esy_logs_lwt.debug(m => m("build override: %a", Override.pp, override)); */
     let* build = Override.build(override);
     switch (build) {
     | Some(override) => return(f(v, override))
@@ -34,10 +34,10 @@ let foldWithBuildOverrides = (~f, ~init, overrides) => {
 let foldWithInstallOverrides = (~f, ~init, overrides) => {
   open RunAsync.Syntax;
   let f = (v, override) => {
-    let%lwt () =
+    /* let%lwt () =
       Esy_logs_lwt.debug(m =>
         m("install override: %a", Override.pp, override)
-      );
+      ); */
     let* install = Override.install(override);
     switch (install) {
     | Some(override) => return(f(v, override))

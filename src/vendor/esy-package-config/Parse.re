@@ -60,31 +60,3 @@ let parse = (p, input) =>
     let msg = Printf.sprintf({|parsing "%s": %s|}, input, msg);
     Error(msg);
   };
-
-module Test = {
-  let expectParses = (~pp, ~compare, parse, input, expectation) =>
-    switch (parse(input)) {
-    | Error(err) =>
-      Format.printf("Error parsing '%s': %s@\n", input, err);
-      false;
-    | Ok(v) when compare(v, expectation) == 0 => true
-    | Ok(v) =>
-      Format.printf(
-        "Error parsing '%s':@\n  expected: %a@\n  got:      %a@\n",
-        input,
-        pp,
-        expectation,
-        pp,
-        v,
-      );
-      false;
-    };
-
-  let parse = (~sexp_of, parse, input) =>
-    switch (parse(input)) {
-    | Error(err) => Format.printf("ERROR: %s@.", err)
-    | Ok(v) =>
-      let sexp = sexp_of(v);
-      Format.printf("%a@.", Sexplib0.Sexp.pp_hum, sexp);
-    };
-};
