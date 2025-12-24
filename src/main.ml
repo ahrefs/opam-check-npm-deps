@@ -18,7 +18,7 @@ module Of_package_json = struct
     let open EsyPackageConfig in
     let open EsyPackageConfig.RunAsync.Syntax in
     let* json = Fs.readJsonFile path in
-    let* pkgJson = RunAsync.ofRun (Json.parseJsonWith of_yojson json) in
+    let* pkgJson = RunAsync.ofRun (Run.ofStringError (of_yojson json)) in
     return pkgJson.version
 end
 
